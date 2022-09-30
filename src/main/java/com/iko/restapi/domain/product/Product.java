@@ -1,6 +1,7 @@
 package com.iko.restapi.domain.product;
 
 import com.iko.restapi.common.entity.BaseTimeEntity;
+import com.iko.restapi.common.exception.InvalidParameterException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,8 +9,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Getter
 @Entity
@@ -20,13 +19,13 @@ public class Product extends BaseTimeEntity {
     @Column(name = "product_id")
     private Long id;
 
-    @Column(nullable = false)
-    private String productCode; // 일단은 id랑 동일하게 맞출 예정
+//    @Column(nullable = false)
+//    private String productCode; // 일단 id를 리턴
 
     @Column(nullable = false)
     private String name;
 
-    private String nameKor;
+    private String nameKor; // 국제화 기능이 안 들어갈지 의문입니다..
 
     @Column(nullable = false)
     private String title;
@@ -41,7 +40,7 @@ public class Product extends BaseTimeEntity {
     private List<ProductOptionGroup> options = new ArrayList<>();
 
     @Column(nullable = false, length = 65535)
-    private String detail;
+    private String description;
 
     @Column(nullable = false)
     private Integer consumerPrice;
@@ -87,20 +86,24 @@ public class Product extends BaseTimeEntity {
     private String image1;
     private String image2;
 
+    public String productCode() {
+        return id.toString();
+    }
+
     public Product(
-            String productCode, String name, String nameKor, String title, String manufacturer, String brand,
+            String name, String nameKor, String title, String manufacturer, String brand,
             List<ProductOptionGroup> options, String detail, Integer consumerPrice, Integer sellPrice,
             Boolean selling, Boolean soldOut, Integer defaultDeliveryFee, Integer freeDeliveryFee, String searchKeyword,
             String seoTitle, String seoDescription, String seoKeyword, String seoStandard, String colorName, String colorCode,
             String generalDeliveryGuide, String speedDeliveryGuide, String image1, String image2) {
-        this.productCode = productCode;
         this.name = name;
         this.nameKor = nameKor;
         this.title = title;
         this.manufacturer = manufacturer;
         this.brand = brand;
+        options.forEach(og -> og.setProduct(this));
         this.options = options;
-        this.detail = detail;
+        this.description = detail;
         this.consumerPrice = consumerPrice;
         this.sellPrice = sellPrice;
         this.selling = selling;
@@ -120,13 +123,44 @@ public class Product extends BaseTimeEntity {
         this.image2 = image2;
     }
 
+    public int wholePrice(List<ProductOptionItem> selected) {
+        return selected.stream().reduce(0, (x, y) -> x + y.getPrice(), Integer::sum);
+    }
+
+    public void validateSelected(List<ProductOptionItem> selected) {
+        options.forEach(og -> {
+            if (og.getOptional()) {
+                return;
+            }
+            selected.stream().filter(item -> item.getGroup().equals(og))
+                    .findAny()
+                    .orElseThrow(() -> {
+                        throw new InvalidParameterException("필수 옵션을 선택해주세요");
+                    });
+        });
+    }
+
     /**
-     * 옵션 목록을 반환한다.
-     * @return [{optionGroupName: [[name(String), value(String)] 쌍]}]
+     * 옵션을 선택하는 메서드
+     * @param values 옵션 선택
+     * @return 선택된 옵션 목록
+     * @throws InvalidParameterException : 필수 선택값 미선택 시 발생
      */
-    public List<Map<String, List<List<String>>>> getOptions() {
-        return options.stream()
-                .map(group -> Map.of(group.getOptionName(), group.optionItems()))
-                .collect(Collectors.toList());
+    public List<ProductOptionItem> selectOption(List<String> values) {
+        List<ProductOptionItem> selected = new ArrayList<>();
+        for (int i = 0; i < values.size(); i++) {
+            var option = options.get(i);
+            var value = values.get(i);
+            selected.add(option.getItems().stream()
+                    .filter(item -> item.getOptionValue().equals(value))
+                    .findFirst()
+                    .orElseThrow(() -> {
+                        throw new InvalidParameterException();
+                    })
+            );
+        }
+        // optional = false인 group들 선택되었는지 검증
+        validateSelected(selected);
+        return selected;
     }
 }

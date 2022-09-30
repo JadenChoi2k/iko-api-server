@@ -19,7 +19,10 @@ public class ProductController {
     public CommonResponse products(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "20") Integer size,
-            @RequestParam(defaultValue = "date") String orderBy
+            // null -> recommend
+            // date_desc / date_asc
+            // price_desc / price_asc
+            @RequestParam(name = "order_by", required = false) String orderBy
             ) {
         return PaginationResponse.success(productService.products(page, size, orderBy));
     }
