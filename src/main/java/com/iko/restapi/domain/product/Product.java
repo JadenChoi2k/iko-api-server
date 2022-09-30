@@ -31,16 +31,16 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 31)
     private String manufacturer;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 31)
     private String brand;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOptionGroup> options = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 65535)
     private String detail;
 
     @Column(nullable = false)
