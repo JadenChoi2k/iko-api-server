@@ -10,7 +10,7 @@ public class CommonResponse {
     private String msg;
     private Object data;
 
-    private CommonResponse(String code, String msg, Object data) {
+    protected CommonResponse(String code, String msg, Object data) {
         this.code = code;
         this.msg = msg;
         this.data = data;
