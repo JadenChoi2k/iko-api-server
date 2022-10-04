@@ -1,6 +1,7 @@
 package com.iko.restapi.domain.product;
 
 import com.iko.restapi.common.entity.BaseTimeEntity;
+import com.iko.restapi.common.exception.EntityNotFoundException;
 import com.iko.restapi.common.exception.InvalidParameterException;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,7 +9,9 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Entity
@@ -127,6 +130,18 @@ public class Product extends BaseTimeEntity {
         return selected.stream().reduce(0, (x, y) -> x + y.getPrice(), Integer::sum);
     }
 
+    public void validateSelected(Map<ProductOptionGroup, ProductOptionItem> selected) {
+        options.forEach(og -> {
+            if (og.getOptional()) {
+                return;
+            }
+            selected.entrySet().stream()
+                    .filter(entry -> entry.getKey().equals(og.getOptionName()))
+                    .findAny()
+                    .orElseThrow(() -> new InvalidParameterException("필수 옵션을 선택해주세요"));
+        });
+    }
+
     public void validateSelected(List<ProductOptionItem> selected) {
         options.forEach(og -> {
             if (og.getOptional()) {
@@ -142,22 +157,19 @@ public class Product extends BaseTimeEntity {
 
     /**
      * 옵션을 선택하는 메서드
-     * @param values 옵션 선택
-     * @return 선택된 옵션 목록
+     * @param select 옵션 선택 (optionGroupName, optionValue 쌍)
+     * @return 선택된 옵션 목록 (optionGroup, optionItem 쌍)
      * @throws InvalidParameterException : 필수 선택값 미선택 시 발생
      */
-    public List<ProductOptionItem> selectOption(List<String> values) {
-        List<ProductOptionItem> selected = new ArrayList<>();
-        for (int i = 0; i < values.size(); i++) {
-            var option = options.get(i);
-            var value = values.get(i);
-            selected.add(option.getItems().stream()
-                    .filter(item -> item.getOptionValue().equals(value))
-                    .findFirst()
-                    .orElseThrow(() -> {
-                        throw new InvalidParameterException();
-                    })
-            );
+    public Map<ProductOptionGroup, ProductOptionItem> selectOptions(Map<String, String> select) {
+        Map<ProductOptionGroup, ProductOptionItem> selected = new HashMap<>();
+        for (String groupName: select.keySet()) {
+            var optionGroup = options.stream()
+                    .filter(og -> og.getOptionName().equals(groupName))
+                    .findAny()
+                    .orElseThrow(() -> new EntityNotFoundException("해당 옵션을 찾을 수 없습니다"));
+            var optionItem = optionGroup.select(select.get(groupName));
+            selected.put(optionGroup, optionItem);
         }
         // optional = false인 group들 선택되었는지 검증
         validateSelected(selected);

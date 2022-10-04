@@ -48,4 +48,11 @@ public class ProductOptionGroup {
         this.optional = value;
         return this;
     }
+
+    public ProductOptionItem select(String value) {
+        return items.stream()
+                .filter(item -> item.getOptionValue().equals(value))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("옵션에 해당하는 값을 찾을 수 없습니다."));
+    }
 }
