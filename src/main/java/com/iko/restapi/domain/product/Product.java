@@ -42,6 +42,7 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOptionGroup> options = new ArrayList<>();
 
+    @Lob
     @Column(nullable = false, length = 65535)
     private String description;
 
