@@ -7,15 +7,15 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class PaginationResponse extends CommonResponse {
+public class PaginationResponse<T> extends CommonResponse<List<T>> {
     private Meta meta;
 
-    private PaginationResponse(Meta meta, Object data) {
-        super("200", "ok", data);
+    private PaginationResponse(Meta meta, List<T> data) {
+        super(200, "ok", data);
         this.meta = meta;
     }
 
-    public static PaginationResponse success(int page, String orderBy, List<?> data) {
+    public static <T> PaginationResponse<T> success(int page, String orderBy, List<T> data) {
         return new PaginationResponse(
                 Meta.builder()
                         .page(page)

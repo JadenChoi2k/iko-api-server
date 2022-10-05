@@ -3,6 +3,9 @@ package com.iko.restapi.dto;
 import com.iko.restapi.domain.product.Product;
 import com.iko.restapi.domain.product.ProductOptionGroup;
 import com.iko.restapi.domain.product.ProductOptionItem;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.Getter;
 
@@ -13,22 +16,38 @@ public class ProductDto {
 
     /* Response */
 
+    @ApiModel
     @Getter
     public static class PageItem {
+        @ApiModelProperty("아이디")
         private Long id;
+        @ApiModelProperty("이름")
         private String name;
+        @ApiModelProperty(value = "한국어이름", allowEmptyValue = true)
         private String nameKor;
+        @ApiModelProperty("타이틀")
         private String title;
+        @ApiModelProperty("브랜드")
         private String brand;
+        @ApiModelProperty("소비자가격")
         private Integer consumerPrice;
+        @ApiModelProperty("판매가")
         private Integer sellPrice;
+        @ApiModelProperty("판매 여부")
         private Boolean selling;
+        @ApiModelProperty("품절 여부")
         private Boolean soldOut;
+        @ApiModelProperty("기본배송비")
         private Integer defaultDeliveryFee;
+        @ApiModelProperty("무료배송가격")
         private Integer freeDeliveryFee;
+        @ApiModelProperty("컬러 이름")
         private String colorName;
+        @ApiModelProperty("컬러 코드")
         private String colorCode;
+        @ApiModelProperty("이미지 1")
         private String image1;
+        @ApiModelProperty("이미지 2")
         private String image2;
 
         PageItem(
@@ -74,6 +93,7 @@ public class ProductDto {
         }
     }
 
+    @ApiModel
     @Getter
     public static class Detail {
         private Long id;
@@ -83,6 +103,7 @@ public class ProductDto {
         private String manufacturer;
         private String brand;
         private List<OptionGroup> options;
+        @ApiModelProperty("상세 내용")
         private String description;
         private Integer consumerPrice;
         private Integer sellPrice;
@@ -90,11 +111,17 @@ public class ProductDto {
         private Boolean soldOut;
         private Integer defaultDeliveryFee;
         private Integer freeDeliveryFee;
+        @ApiModelProperty("seo 타이틀")
         private String seoTitle;
+        @ApiModelProperty("seo 설명")
         private String seoDescription;
+        @ApiModelProperty("seo 키워드")
         private String seoKeyword;
+        @ApiModelProperty("seo 스탠다드")
         private String seoStandard;
+        @ApiModelProperty("일반 배송 가이드")
         private String generalDeliveryGuide;
+        @ApiModelProperty("빠른 배송 가이드")
         private String speedDeliveryGuide;
         private String colorName;
         private String colorCode;
