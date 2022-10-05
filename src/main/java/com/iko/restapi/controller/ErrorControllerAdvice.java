@@ -12,7 +12,7 @@ public class ErrorControllerAdvice {
 
     @ExceptionHandler({BaseException.class})
     public CommonResponse baseException(BaseException e) {
-        log.error("{}: {}", e.getErrorCode(), e.getMessage());
+        log.error("[{}][{}]: {}", e.getErrorCode().getStatus(),e.getErrorCode().getDescription(), e.getMessage());
         return CommonResponse.fail(e);
     }
 }
