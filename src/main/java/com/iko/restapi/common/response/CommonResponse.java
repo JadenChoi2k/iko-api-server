@@ -1,9 +1,11 @@
 package com.iko.restapi.common.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.iko.restapi.common.exception.BaseException;
 import lombok.Data;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class CommonResponse {
     private int code;
