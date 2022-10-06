@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local
+    active: test
   # solving swagger problem
   mvc:
     pathmatch:
