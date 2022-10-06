@@ -19,7 +19,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic().disable()
                 // .logout() 구현하기
                 .authorizeRequests()
-                    .antMatchers("/api/v1/product", "/api/v1/product/**")
-                    .permitAll();
+                .antMatchers("/api/v1/product", "/api/v1/product/**", "api/v1/user/**", "api/v1/user")
+                .permitAll();
     }
 }
