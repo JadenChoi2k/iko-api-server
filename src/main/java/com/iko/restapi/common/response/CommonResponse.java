@@ -33,4 +33,8 @@ public class CommonResponse<T> {
     public static <T> CommonResponse<T> fail(BaseException e) {
         return new CommonResponse(e.getErrorCode().getStatus(), e.getMessage(), null);
     }
+    
+    public static <T> CommonResponse<T> fail(Exception e) {
+        return new CommonResponse(500, e.getMessage(), null);
+    }
 }
