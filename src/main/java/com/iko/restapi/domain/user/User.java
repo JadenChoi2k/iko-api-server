@@ -18,7 +18,7 @@ import com.iko.restapi.common.entity.BaseTimeEntity;
 import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.exception.ErrorCode;
 import com.iko.restapi.dto.UserDto;
-import com.iko.restapi.dto.UserDto.UserRqDto;
+import com.iko.restapi.dto.UserDto.JoinRequest;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,30 +31,30 @@ public class User extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue
-	@Column(name = "usr_sno")
-	private Long usrSno;
+	@Column(name = "user_id")
+	private Long id;
    
-   @Column(name = "usr_id", unique = true)
-   private String userId;
+   @Column(name = "login_id", unique = true)
+   private String loginId;
    
-   @Column(name = "usr_name")
-   private String userNm;
+   @Column(name = "username")
+   private String username;
    
-   @Column(name = "usr_email")
-   private String userEmail;
+   @Column(name = "email")
+   private String email;
    
-   @Column(name = "usr_phone")
-   private String userPhone;
+   @Column(name = "phone")
+   private String phone;
    
    @Column(name = "pswd")
-   private String pw;
+   private String password;
    
-   @Column(name = "brth_dt")
+   @Column(name = "birthday")
    private Date birthday;
    
    // 계정의 사용여부
    @Column(name = "use_yn")
-   private String useYn;
+   private Boolean useYn;
 
    @Column(name = "pw_updt_dt")
    private Date pwUpdateDt;
@@ -66,17 +66,17 @@ public class User extends BaseTimeEntity {
 //   @OneToMany(mappedBy = "user", orphanRemoval = false )
 //   private List<Cart> carts = new ArrayList<>();   
    
-   User(UserRqDto rqDto){
-	   this.userId = rqDto.getUserId();
-	   this.userNm = rqDto.getUserNm();
-	   this.userEmail = rqDto.getUserEmail(); 
-	   this.userPhone = rqDto.getUserPhone();
+   User(JoinRequest rqDto){
+	   this.loginId = rqDto.getLoginId();
+	   this.username = rqDto.getUsername();
+	   this.email = rqDto.getEmail();
+	   this.phone = rqDto.getPhone();
    }
    
-   public static User dtoToEntity(UserRqDto rqDto) throws Exception {
+   public static User dtoToEntity(JoinRequest rqDto) throws Exception {
 		User userJoinEntity = new User(rqDto);
 		
-		userJoinEntity.pw = User.SHA512(rqDto.getPw());
+		userJoinEntity.password = User.SHA512(rqDto.getPassword());
 		
 		// front 에서 검증하길..
 		SimpleDateFormat sdfBirthday = new SimpleDateFormat("yyyy-MM-dd");
@@ -84,13 +84,13 @@ public class User extends BaseTimeEntity {
 		
 		Date today = new Date();
 		userJoinEntity.pwUpdateDt = today;
-		userJoinEntity.useYn = "Y";
+		userJoinEntity.useYn = true;
 		
 		// 이메일 형식 검증
 		Pattern p = Pattern.compile("^[_a-z0-9-]+(.[_a-z0-9-]+)*@(?:\\w+\\.)+\\w+$");
-		Matcher m = p.matcher(rqDto.getUserEmail());
+		Matcher m = p.matcher(rqDto.getEmail());
 		if(m.matches()) {
-			userJoinEntity.userEmail = rqDto.getUserEmail();
+			userJoinEntity.email = rqDto.getEmail();
 		} else {
 			throw new BaseException("Wrong Email Address", ErrorCode.COMMON_INVALID_PARAMETER);
 		}
@@ -112,21 +112,21 @@ public class User extends BaseTimeEntity {
 		return hex;
 	}
    
-   public void update(UserRqDto rqDto) {
-	   if(null != rqDto.getUserNm()) {
-		   this.userNm = rqDto.getUserNm();
+   public void update(UserDto.EditRequest rqDto) {
+	   if(null != rqDto.getUsername()) {
+		   this.username = rqDto.getUsername();
 	   }
-	   if(null != rqDto.getUserPhone()) {
-		   this.userPhone = rqDto.getUserPhone();
+	   if(null != rqDto.getPhone()) {
+		   this.phone = rqDto.getPhone();
 	   }
-	   if(null != rqDto.getUserEmail()) {
-		   this.userEmail = rqDto.getUserEmail();
+	   if(null != rqDto.getEmail()) {
+		   this.email = rqDto.getEmail();
 	   }
    }
    
-   public void pwUpdate(UserRqDto rqDto) {
-	   if(null != rqDto.getPw()) {
-		   this.pw = SHA512(rqDto.getPw());
+   public void pwUpdate(String password) {
+	   if(null != password) {
+		   this.password = SHA512(password);
 		   this.pwUpdateDt = new Date();
 	   } else {
 		   throw new BaseException("비밀번호없음", ErrorCode.COMMON_INVALID_PARAMETER);
