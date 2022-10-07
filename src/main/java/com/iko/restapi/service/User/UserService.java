@@ -2,6 +2,7 @@ package com.iko.restapi.service.User;
 
 import javax.transaction.Transactional;
 
+import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.dto.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,16 +28,18 @@ public class UserService {
 	}
 	
 	// 아이디 조회
-	public boolean idCheck(String id) {
-		return userJpaRepository.existsByLoginId(id);
+	public boolean loginIdCheck(String id) {
+		boolean result = userJpaRepository.existsByLoginId(id);
+		log.info("loginId Exist Check Result : " + result);
+		return result;
 	}
 	
 	// 회원가입
-	public String userJoin(JoinRequest rqDto) throws Exception {
-		if(!emailCheck(rqDto.getEmail()) && !idCheck(rqDto.getLoginId())) {
-			userJpaRepository.save(User.dtoToEntity(rqDto));
-			return "가입성공";
-		} throw new BaseException("이메일, 아이디 중복으로 가입실패", ErrorCode.COMMON_INVALID_PARAMETER);
+	public Detail userJoin(JoinRequest rqDto) throws Exception {
+		if(!emailCheck(rqDto.getEmail()) && !loginIdCheck(rqDto.getLoginId())) {
+			User user = userJpaRepository.save(User.dtoToEntity(rqDto));
+			return Detail.from(user);
+		} throw new InvalidParameterException("이메일, 아이디 중복으로 가입실패");
 	}
 	
 	// 로그인
@@ -53,7 +56,7 @@ public class UserService {
 		if(!"Y".equals(user.getUseYn())) {
 			throw new BaseException("사용 안하는 계정", ErrorCode.COMMON_INVALID_ACCESS);
 		} else {
-			return Detail.entityToDto(user);
+			return Detail.from(user);
 		}
 	}
 	
@@ -66,7 +69,7 @@ public class UserService {
 				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
 		user.update(rqDto);
 		userJpaRepository.save(user);
-		return Detail.entityToDto(user);
+		return Detail.from(user);
 	}
 	
 	// 비밀번호 재설정

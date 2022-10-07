@@ -2,8 +2,7 @@ package com.iko.restapi.controller.User;
 
 import com.iko.restapi.dto.UserDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,33 +36,25 @@ public class UserController {
 	}
 	
 	@GetMapping(value = "/exists/loginId")
-	public CommonResponse<String> idCheck(@RequestParam String id) {
-		log.info("loginId exist check: " + id);
-		try {
-			boolean result = false;
-			result = userService.idCheck(id);
-			log.info("Id Exist Check Result : " + result);
-			if(result) {
-				return CommonResponse.success("id "+id+" exist");
-			} else {
-				return CommonResponse.success("id "+id+" not exist");
-			}
-		} catch (Exception e) {
-			log.error("Id Exist Check Error. " + e);
-			return CommonResponse.fail(e);
-		}
+	public CommonResponse<UserDto.Exists> loginIdCheck(@RequestParam String loginId) {
+		log.info("loginId exist check: " + loginId);
+		return CommonResponse.success(
+				UserDto.Exists.builder()
+						.attributeName("loginId")
+						.result(userService.loginIdCheck(loginId))
+						.build()
+		);
 	}
 	
 	@PostMapping(value = "/join")
-	public CommonResponse<String> UserJoin(@RequestBody JoinRequest rqDto) throws JsonProcessingException{
+	public CommonResponse<UserDto.Detail> UserJoin(@Validated @RequestBody JoinRequest rqDto) throws JsonProcessingException{
 		log.info("Join Start. JoinRqDto: " + mapper.writeValueAsString(rqDto));
-		String result = new String();		
 		try {
-			result = userService.userJoin(rqDto);
-			log.info("userJoin Seccess. rqDto id"+rqDto.getLoginId());
+			var result = userService.userJoin(rqDto);
+			log.info("userJoin Seccess. loginId: {}", rqDto.getLoginId());
 			return CommonResponse.success(result);
 		} catch (BaseException baseException) {
-			log.info("UserJoin Failed. rqDto id: " + rqDto.getLoginId());
+			log.info("UserJoin Failed. loginId: {}", rqDto.getLoginId());
 			return CommonResponse.ok(baseException.getMessage());
 		} catch (Exception e) {
 			log.error("UserJoin Error. " + e);
@@ -106,7 +97,7 @@ public class UserController {
 	}
 	
 	@PostMapping(value = "/pwEdit")
-	public CommonResponse<String> pwUpdate(@RequestBody UserDto.EditRequest rqDto) {
+	public CommonResponse<String> pwUpdate(@RequestBody UserDto.EditPwRequest rqDto) {
 //		log.info("pwUpdate Start. rqDto id: " + rqDto.getLoginId());
 		String rsDto = new String();
 		try {

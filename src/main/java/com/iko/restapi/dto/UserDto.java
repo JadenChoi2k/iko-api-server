@@ -7,6 +7,9 @@ import com.iko.restapi.domain.user.User;
 
 import lombok.*;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+
 
 @Getter
 @Setter
@@ -16,7 +19,9 @@ public class UserDto {
 
 	@Data
 	public static class LoginRequest {
+		@NotBlank
 		private String loginId;
+		@NotBlank
 		private String password;
 	}
 
@@ -25,11 +30,20 @@ public class UserDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class JoinRequest {
+		@NotBlank
 		private String loginId;
+		@NotBlank
 		private String username;
+		@Email(message = "invalid email type")
 		private String email;
+		// todo: 폰넘버 타입 정의하기
+		@NotBlank
 		private String phone;
+		// todo: 비밀번호 검증
+		@NotBlank
 		private String password;
+		// 날짜 여기서 검증하기
+		@NotBlank
 		private String birthday;
 	}
 
@@ -38,8 +52,13 @@ public class UserDto {
 		private String username;
 		private String email;
 		private String phone;
-		private String password;
 		private String birthday;
+	}
+
+	@Data
+	public static class EditPwRequest {
+		@NotBlank
+		private String password;
 	}
 
 	/* Response */
@@ -75,7 +94,7 @@ public class UserDto {
 			this.pwUpdateDt = sdf.format(user.getPwUpdateDt());
 		}
 		
-		public static Detail entityToDto(User user) {
+		public static Detail from(User user) {
 			return new Detail(user);
 		}
 	}
