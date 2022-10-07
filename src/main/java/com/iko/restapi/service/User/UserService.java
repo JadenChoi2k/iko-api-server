@@ -35,7 +35,7 @@ public class UserService {
 	}
 	
 	// 회원가입
-	public Detail userJoin(JoinRequest rqDto) throws Exception {
+	public Detail userJoin(JoinRequest rqDto) throws InvalidParameterException {
 		if(!emailCheck(rqDto.getEmail()) && !loginIdCheck(rqDto.getLoginId())) {
 			User user = userJpaRepository.save(User.dtoToEntity(rqDto));
 			return Detail.from(user);
@@ -43,7 +43,7 @@ public class UserService {
 	}
 	
 	// 로그인
-	public Detail login(String loginId, String password) throws Exception {
+	public Detail login(String loginId, String password) throws BaseException {
 		User user = userJpaRepository.findByLoginId(loginId).orElseThrow(
 				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
 		if(null != user) {			
@@ -62,7 +62,7 @@ public class UserService {
 	
 	// 회원정보 수정
 	@Transactional
-	public Detail editUser(UserDto.EditRequest rqDto) throws Exception {
+	public Detail editUser(UserDto.EditRequest rqDto) throws BaseException {
 		// 요청한 유저에 대한 정보는 세션에서 가져온다.
 		Long userId = -1L; // TODO: implement
 		User user = userJpaRepository.findById(userId).orElseThrow(
@@ -74,13 +74,12 @@ public class UserService {
 	
 	// 비밀번호 재설정
 	@Transactional
-	public String pwUpdate(String newPw) throws Exception {
+	public void pwUpdate(String newPw) throws BaseException {
 		// 세션에서 조회
 		Long userId = -1L; // todo: implement
 		User user = userJpaRepository.findById(userId).orElseThrow(
 				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
 		user.pwUpdate(newPw);
 		userJpaRepository.save(user);
-		return "reset";
 	}
 }

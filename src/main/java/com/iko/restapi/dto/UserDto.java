@@ -25,6 +25,7 @@ public class UserDto {
 		private String password;
 	}
 
+	@ToString
 	@Getter
 	@Setter
 	@AllArgsConstructor
@@ -70,6 +71,7 @@ public class UserDto {
 		private Boolean result;
 	}
 
+	@ToString
 	@Getter
 	@Setter
 	@NoArgsConstructor

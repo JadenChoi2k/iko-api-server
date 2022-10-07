@@ -47,69 +47,34 @@ public class UserController {
 	}
 	
 	@PostMapping(value = "/join")
-	public CommonResponse<UserDto.Detail> UserJoin(@Validated @RequestBody JoinRequest rqDto) throws JsonProcessingException{
-		log.info("Join Start. JoinRqDto: " + mapper.writeValueAsString(rqDto));
-		try {
-			var result = userService.userJoin(rqDto);
-			log.info("userJoin Seccess. loginId: {}", rqDto.getLoginId());
-			return CommonResponse.success(result);
-		} catch (BaseException baseException) {
-			log.info("UserJoin Failed. loginId: {}", rqDto.getLoginId());
-			return CommonResponse.ok(baseException.getMessage());
-		} catch (Exception e) {
-			log.error("UserJoin Error. " + e);
-			return CommonResponse.fail(e);
-		}
+	public CommonResponse<UserDto.Detail> UserJoin(@Validated @RequestBody JoinRequest rqDto) {
+		log.info("Join Start. JoinRqDto: " + rqDto.toString());
+		var result = userService.userJoin(rqDto);
+		log.info("userJoin Seccess. loginId: {}", rqDto.getLoginId());
+		return CommonResponse.success(result);
 	}
 	
 	@PostMapping(value = "/login")
-	public CommonResponse<Detail> Login(@RequestBody UserDto.LoginRequest loginRequest) throws JsonProcessingException {
-		log.info("Login Start. rqDto id: " + loginRequest.getLoginId());
-		Detail rsDto = new Detail();
-		try {
-			rsDto = userService.login(loginRequest.getLoginId(), loginRequest.getPassword());
-			log.info("Login Success. UserRsDto: "+mapper.writeValueAsString(rsDto));
-			return CommonResponse.success(rsDto);
-		} catch (BaseException baseException) {
-			log.info("Login Failed. rqDto userId: " + loginRequest.getLoginId());
-			return CommonResponse.ok(baseException.getMessage());
-		} catch (Exception e) {
-			log.error("Login Failed. " + e);
-			return CommonResponse.fail(e);
-		}
+	public CommonResponse<Detail> Login(@RequestBody UserDto.LoginRequest loginRequest) {
+		log.info("Login Start. rqDto id: {}", loginRequest.getLoginId());
+		Detail rsDto = userService.login(loginRequest.getLoginId(), loginRequest.getPassword());
+		log.info("Login Success. loginId: {}", rsDto.getLoginId());
+		return CommonResponse.success(rsDto);
 	}
 	
 	@PostMapping(value = "/edit")
 	public CommonResponse<Detail> editUser(@RequestBody UserDto.EditRequest rqDto) {
 		log.info("editUser Start. rqDto id: [[userId]]"); // TODO: implement
-		Detail rsDto = new Detail();
-		try {
-			rsDto = userService.editUser(rqDto);
-			log.info("EditUser Success. UserRsDto: "+ mapper.writeValueAsString(rsDto));
-			return CommonResponse.success(rsDto);
-		} catch (BaseException baseException) {
-			log.info("EditUser Failed. rqDto userId: [[userId]]");
-			return CommonResponse.ok(baseException.getMessage());
-		} catch (Exception e) {
-			log.error("EditUser Failed. "+ e);
-			return CommonResponse.fail(e);
-		}
+		var rsDto = userService.editUser(rqDto);
+		log.info("EditUser Success. UserRsDto: {}", rsDto.toString());
+		return CommonResponse.success(rsDto);
 	}
 	
 	@PostMapping(value = "/pwEdit")
 	public CommonResponse<String> pwUpdate(@RequestBody UserDto.EditPwRequest rqDto) {
-//		log.info("pwUpdate Start. rqDto id: " + rqDto.getLoginId());
-		String rsDto = new String();
-		try {
-			rsDto = userService.pwUpdate(rqDto.getPassword());
-//			log.info("pwUpdate Success. rqDto Id: "+ rqDto.getLoginId());
-			return CommonResponse.success(rsDto);
-		} catch (BaseException baseException) {
-//			log.info("pwUpdate Failed. rqDto userId: " + rqDto.getLoginId());
-			return CommonResponse.ok(baseException.getMessage());
-		} catch (Exception e) {
-			log.error("pwUpdate Failed. "+ e);
-			return CommonResponse.fail(e);
-		}
+		log.info("pwUpdate Start. rqDto id: "); // todo: session 조회
+		userService.pwUpdate(rqDto.getPassword());
+		log.info("pwUpdate Success. rqDto Id: ");
+		return CommonResponse.success("success");
 	}
 }

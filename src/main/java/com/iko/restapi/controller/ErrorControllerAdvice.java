@@ -20,6 +20,11 @@ public class ErrorControllerAdvice {
         return CommonResponse.fail(e);
     }
 
+    /**
+     * 런타임 오류나 시스템 에러 등 중대한 오류, 집중 모니터링 대상
+     * @param e
+     * @return
+     */
     @ExceptionHandler({RuntimeException.class, SystemException.class})
     @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
     public CommonResponse runtimeException(RuntimeException e) {
