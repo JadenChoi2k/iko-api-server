@@ -5,3 +5,8 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+
+server:
+  servlet:
+    session:
+      timeout: 30m

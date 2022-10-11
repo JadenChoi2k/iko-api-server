@@ -37,6 +37,6 @@ public class CommonResponse<T> {
     }
     
     public static <T> CommonResponse<T> fail(Exception e) {
-        return new CommonResponse(500, null, e.getMessage(), null);
+        return new CommonResponse(500, null, "internal server error", null);
     }
 }

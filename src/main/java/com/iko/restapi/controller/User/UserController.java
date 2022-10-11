@@ -1,21 +1,18 @@
 package com.iko.restapi.controller.User;
 
-import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.dto.UserDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.response.CommonResponse;
 import com.iko.restapi.dto.UserDto.JoinRequest;
 import com.iko.restapi.dto.UserDto.Detail;
 import com.iko.restapi.service.User.UserService;
 
 import lombok.extern.slf4j.Slf4j;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
 @RequestMapping("/api/v1/user")
@@ -29,7 +26,7 @@ public class UserController {
 		log.info("email exist check: " + email);
 		return CommonResponse.success(
 				UserDto.Exists.builder()
-						.attributeName("email")
+						.attribute("email")
 						.result(userService.emailCheck(email))
 						.build()
 		);
@@ -40,7 +37,7 @@ public class UserController {
 		log.info("loginId exist check: " + loginId);
 		return CommonResponse.success(
 				UserDto.Exists.builder()
-						.attributeName("loginId")
+						.attribute("loginId")
 						.result(userService.loginIdCheck(loginId))
 						.build()
 		);
@@ -68,5 +65,10 @@ public class UserController {
 		userService.pwUpdate(rqDto.getPassword());
 		log.info("pwUpdate Success. rqDto Id: ");
 		return CommonResponse.success("success");
+	}
+
+	@GetMapping("/me")
+	public CommonResponse<UserDto.Detail> me() {
+		return CommonResponse.success(userService.me());
 	}
 }

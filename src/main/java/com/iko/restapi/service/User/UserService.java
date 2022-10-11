@@ -1,8 +1,7 @@
 package com.iko.restapi.service.User;
 
-import javax.transaction.Transactional;
-
 import com.iko.restapi.common.exception.InvalidParameterException;
+import com.iko.restapi.common.utils.SecurityUtils;
 import com.iko.restapi.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +14,7 @@ import com.iko.restapi.domain.user.User;
 import com.iko.restapi.dto.UserDto.JoinRequest;
 import com.iko.restapi.dto.UserDto.Detail;
 import com.iko.restapi.repository.User.UserJpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -47,21 +47,28 @@ public class UserService {
 	}
 	
 	// 로그인
-	public Detail login(String loginId, String password) throws BaseException {
-		User user = userJpaRepository.findByLoginId(loginId).orElseThrow(
-				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
-		if(null != user) {			
-			String pw = user.getPassword();
-			String enpw = User.SHA512(password);
-			if(!pw.equals(enpw)) {
-				throw new BaseException("비밀번호 틀림", ErrorCode.COMMON_INVALID_PARAMETER);
-			}
-		}
-		if(!"Y".equals(user.getUseYn())) {
-			throw new BaseException("사용 안하는 계정", ErrorCode.COMMON_INVALID_ACCESS);
-		} else {
-			return Detail.from(user);
-		}
+//	public Detail login(String loginId, String password) throws BaseException {
+//		User user = userJpaRepository.findByLoginId(loginId).orElseThrow(
+//				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
+//		if(null != user) {
+//			String pw = user.getPassword();
+//			String enpw = User.SHA512(password);
+//			if(!pw.equals(enpw)) {
+//				throw new BaseException("비밀번호 틀림", ErrorCode.COMMON_INVALID_PARAMETER);
+//			}
+//		}
+//		if(!"Y".equals(user.getUseYn())) {
+//			throw new BaseException("사용 안하는 계정", ErrorCode.COMMON_INVALID_ACCESS);
+//		} else {
+//			return Detail.from(user);
+//		}
+//	}
+
+	@Transactional(readOnly = true)
+	public Detail me() {
+		return Detail.from(
+				SecurityUtils.getCurrentUser(userJpaRepository)
+		);
 	}
 	
 	// 회원정보 수정
