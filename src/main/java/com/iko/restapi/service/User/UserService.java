@@ -1,18 +1,27 @@
 package com.iko.restapi.service.User;
 
+import java.util.List;
+
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
-import com.iko.restapi.common.exception.InvalidParameterException;
-import com.iko.restapi.dto.UserDto;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
 import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.exception.ErrorCode;
+import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.domain.user.User;
-import com.iko.restapi.dto.UserDto.JoinRequest;
+import com.iko.restapi.domain.user.UserInfo;
+import com.iko.restapi.dto.UserDto;
 import com.iko.restapi.dto.UserDto.Detail;
+import com.iko.restapi.dto.UserDto.Info;
+import com.iko.restapi.dto.UserDto.JoinRequest;
 import com.iko.restapi.repository.User.UserJpaRepository;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -64,8 +73,10 @@ public class UserService {
 	@Transactional
 	public Detail editUser(UserDto.EditRequest rqDto) throws BaseException {
 		// 요청한 유저에 대한 정보는 세션에서 가져온다.
-		Long userId = -1L; // TODO: implement
-		User user = userJpaRepository.findById(userId).orElseThrow(
+		ServletRequestAttributes servletRequestAttribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+		HttpSession httpSession = servletRequestAttribute.getRequest().getSession();
+		String loginId = httpSession.getAttribute("loginId").toString();
+		User user = userJpaRepository.findByLoginId(loginId).orElseThrow(
 				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
 		user.update(rqDto);
 		userJpaRepository.save(user);
@@ -76,10 +87,20 @@ public class UserService {
 	@Transactional
 	public void pwUpdate(String newPw) throws BaseException {
 		// 세션에서 조회
-		Long userId = -1L; // todo: implement
-		User user = userJpaRepository.findById(userId).orElseThrow(
+		ServletRequestAttributes servletRequestAttribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+		HttpSession httpSession = servletRequestAttribute.getRequest().getSession();
+		String loginId = httpSession.getAttribute("loginId").toString(); // todo: implement
+		User user = userJpaRepository.findByLoginId(loginId).orElseThrow(
 				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
 		user.pwUpdate(newPw);
 		userJpaRepository.save(user);
+	}
+	
+	public UserDto.Info userInfo(Info rqDto) {
+		List<UserInfo> idByUsername = userJpaRepository.getUsernameByUserId();
+		if(idByUsername.size()>0) {
+			rqDto.setUsername(idByUsername.get(0).getUsername());
+		}
+		return rqDto;
 	}
 }

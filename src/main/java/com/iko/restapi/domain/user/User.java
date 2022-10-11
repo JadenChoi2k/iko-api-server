@@ -3,11 +3,7 @@ package com.iko.restapi.domain.user;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,8 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.iko.restapi.common.entity.BaseTimeEntity;
-import com.iko.restapi.common.exception.BaseException;
-import com.iko.restapi.common.exception.ErrorCode;
 import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.common.utils.DataUtils;
 import com.iko.restapi.dto.UserDto;
@@ -84,15 +78,6 @@ public class User extends BaseTimeEntity {
         userJoinEntity.pwUpdateDt = LocalDate.now();
         userJoinEntity.useYn = true;
         userJoinEntity.email = rqDto.getEmail();
-        // 이메일 형식 검증
-        // 필드에서 @Email 통해 검증
-//        Pattern p = Pattern.compile("^[_a-z0-9-]+(.[_a-z0-9-]+)*@(?:\\w+\\.)+\\w+$");
-//        Matcher m = p.matcher(rqDto.getEmail());
-//        if (m.matches()) {
-//            userJoinEntity.email = rqDto.getEmail();
-//        } else {
-//            throw new BaseException("Wrong Email Address", ErrorCode.COMMON_INVALID_PARAMETER);
-//        }
         return userJoinEntity;
     }
 
