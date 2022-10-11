@@ -18,7 +18,7 @@ public class DataUtils {
     }
 
     public static boolean validateBirthday(LocalDate date) {
-        return date.isAfter(LocalDate.now())
-                || date.isBefore(LocalDate.of(1900, 1, 1));
+        return date.isBefore(LocalDate.now())
+                && date.isAfter(LocalDate.of(1900, 1, 1));
     }
 }

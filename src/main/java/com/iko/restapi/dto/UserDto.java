@@ -2,6 +2,8 @@ package com.iko.restapi.dto;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 
 import com.iko.restapi.domain.user.User;
 
@@ -91,9 +93,10 @@ public class UserDto {
 			this.email = user.getEmail();
 			this.phone = user.getPhone();
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			this.birthday = sdf.format(user.getBirthday());
+			var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			this.birthday = user.getBirthday().format(formatter);
 			this.joinDt = user.getCreatedAt();
-			this.pwUpdateDt = sdf.format(user.getPwUpdateDt());
+			this.pwUpdateDt = user.getPwUpdateDt().format(formatter);
 		}
 		
 		public static Detail from(User user) {

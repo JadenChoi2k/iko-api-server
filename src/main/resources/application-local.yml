@@ -12,6 +12,6 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update #create update none
+      ddl-auto: create #create update none
     show-sql: true
     database-platform: org.hibernate.dialect.H2Dialect

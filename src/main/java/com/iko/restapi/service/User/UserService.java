@@ -4,8 +4,10 @@ import javax.transaction.Transactional;
 
 import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.dto.UserDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.exception.ErrorCode;
@@ -16,9 +18,10 @@ import com.iko.restapi.repository.User.UserJpaRepository;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-	@Autowired
-	private UserJpaRepository userJpaRepository;
+	private final BCryptPasswordEncoder passwordEncoder;
+	private final UserJpaRepository userJpaRepository;
 	
 	// 이메일 조회
 	public boolean emailCheck(String email) {
@@ -37,6 +40,7 @@ public class UserService {
 	// 회원가입
 	public Detail userJoin(JoinRequest rqDto) throws InvalidParameterException {
 		if(!emailCheck(rqDto.getEmail()) && !loginIdCheck(rqDto.getLoginId())) {
+			rqDto.setPassword(passwordEncoder.encode(rqDto.getPassword()));
 			User user = userJpaRepository.save(User.dtoToEntity(rqDto));
 			return Detail.from(user);
 		} throw new InvalidParameterException("이메일, 아이디 중복으로 가입실패");

@@ -79,7 +79,7 @@ public class User extends BaseTimeEntity {
     public static User dtoToEntity(JoinRequest rqDto) throws RuntimeException {
         User userJoinEntity = new User(rqDto);
 
-        userJoinEntity.password = User.SHA512(rqDto.getPassword());
+        userJoinEntity.password = rqDto.getPassword();
         userJoinEntity.birthday = DataUtils.parseBirthday(rqDto.getBirthday());
         userJoinEntity.pwUpdateDt = LocalDate.now();
         userJoinEntity.useYn = true;

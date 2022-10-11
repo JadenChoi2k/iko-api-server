@@ -1,7 +1,9 @@
 package com.iko.restapi.controller.User;
 
+import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.dto.UserDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserController {
 	private final UserService userService;
-	
-	private final ObjectMapper mapper;
 	
 	@GetMapping(value = "/exists/email")
 	public CommonResponse<UserDto.Exists> emailCheck(@RequestParam String email) {
@@ -52,14 +52,6 @@ public class UserController {
 		var result = userService.userJoin(rqDto);
 		log.info("userJoin Seccess. loginId: {}", rqDto.getLoginId());
 		return CommonResponse.success(result);
-	}
-	
-	@PostMapping(value = "/login")
-	public CommonResponse<Detail> Login(@RequestBody UserDto.LoginRequest loginRequest) {
-		log.info("Login Start. rqDto id: {}", loginRequest.getLoginId());
-		Detail rsDto = userService.login(loginRequest.getLoginId(), loginRequest.getPassword());
-		log.info("Login Success. loginId: {}", rsDto.getLoginId());
-		return CommonResponse.success(rsDto);
 	}
 	
 	@PostMapping(value = "/edit")

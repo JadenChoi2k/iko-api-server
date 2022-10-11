@@ -11,7 +11,7 @@ public class PaginationResponse<T> extends CommonResponse<List<T>> {
     private Meta meta;
 
     private PaginationResponse(Meta meta, List<T> data) {
-        super(200, "ok", data);
+        super(200, null, "ok", data);
         this.meta = meta;
     }
 
