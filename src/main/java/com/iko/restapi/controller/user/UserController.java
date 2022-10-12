@@ -1,4 +1,4 @@
-package com.iko.restapi.controller.User;
+package com.iko.restapi.controller.user;
 
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.validation.annotation.Validated;
@@ -12,7 +12,7 @@ import com.iko.restapi.common.response.CommonResponse;
 import com.iko.restapi.dto.UserDto;
 import com.iko.restapi.dto.UserDto.Detail;
 import com.iko.restapi.dto.UserDto.JoinRequest;
-import com.iko.restapi.service.User.UserService;
+import com.iko.restapi.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

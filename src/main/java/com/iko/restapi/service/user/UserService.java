@@ -1,10 +1,11 @@
-package com.iko.restapi.service.User;
+package com.iko.restapi.service.user;
 
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -25,9 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-	@Autowired
-	private UserJpaRepository userJpaRepository;
+	private final UserJpaRepository userJpaRepository;
 	
 	// 이메일 조회
 	public boolean emailCheck(String email) {
