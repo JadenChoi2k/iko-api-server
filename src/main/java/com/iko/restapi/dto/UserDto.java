@@ -1,6 +1,5 @@
 package com.iko.restapi.dto;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 
 import javax.validation.constraints.Email;
@@ -40,10 +39,9 @@ public class UserDto {
 	@NoArgsConstructor
 	public static class JoinRequest {
 		@NotBlank
-		@Size(min=6, max=12, message="set Id between 6~12 long")
+		@Size(min=4, max=12, message="set Id between 6~12 long")
 		private String loginId;
 		@NotBlank
-		@Size(min=6, max=12, message="set username between 6~12 long")
 		private String username;
 		@Email(message = "invalid email type")
 		private String email;
@@ -57,7 +55,7 @@ public class UserDto {
 		private String password;
 		// 날짜 여기서 검증하기
 		@NotBlank
-		@Pattern(regexp="^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$", message="invalid birthday")
+//		@Pattern(regexp="^((19|20)\\\\d\\\\d)?([- /.])?(0[1-9]|1[012])([- /.])?(0[1-9]|[12][0-9]|3[01])$")
 		private String birthday;
 	}
 
@@ -103,10 +101,9 @@ public class UserDto {
 			this.username = user.getUsername();
 			this.email = user.getEmail();
 			this.phone = user.getPhone();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			this.birthday = sdf.format(user.getBirthday());
+			this.birthday = user.getBirthday().toString();
 			this.joinDt = user.getCreatedAt();
-			this.pwUpdateDt = sdf.format(user.getPwUpdateDt());
+			this.pwUpdateDt = user.getPwUpdateDt().toString();
 		}
 		
 		public static Detail from(User user) {

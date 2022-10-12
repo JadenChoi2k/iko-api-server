@@ -14,11 +14,11 @@ import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.exception.ErrorCode;
 import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.domain.user.User;
-import com.iko.restapi.domain.user.UserInfo;
 import com.iko.restapi.dto.UserDto;
 import com.iko.restapi.dto.UserDto.Detail;
 import com.iko.restapi.dto.UserDto.Info;
 import com.iko.restapi.dto.UserDto.JoinRequest;
+import com.iko.restapi.dto.UserInfoMapping;
 import com.iko.restapi.repository.User.UserJpaRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -44,29 +44,12 @@ public class UserService {
 	}
 	
 	// 회원가입
+	@Transactional
 	public Detail userJoin(JoinRequest rqDto) throws InvalidParameterException {
 		if(!emailCheck(rqDto.getEmail()) && !loginIdCheck(rqDto.getLoginId())) {
 			User user = userJpaRepository.save(User.dtoToEntity(rqDto));
-			return Detail.from(user);
+			return Detail.from(user); 
 		} throw new InvalidParameterException("이메일, 아이디 중복으로 가입실패");
-	}
-	
-	// 로그인
-	public Detail login(String loginId, String password) throws BaseException {
-		User user = userJpaRepository.findByLoginId(loginId).orElseThrow(
-				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
-		if(null != user) {			
-			String pw = user.getPassword();
-			String enpw = User.SHA512(password);
-			if(!pw.equals(enpw)) {
-				throw new BaseException("비밀번호 틀림", ErrorCode.COMMON_INVALID_PARAMETER);
-			}
-		}
-		if(!"Y".equals(user.getUseYn())) {
-			throw new BaseException("사용 안하는 계정", ErrorCode.COMMON_INVALID_ACCESS);
-		} else {
-			return Detail.from(user);
-		}
 	}
 	
 	// 회원정보 수정
@@ -89,18 +72,24 @@ public class UserService {
 		// 세션에서 조회
 		ServletRequestAttributes servletRequestAttribute = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 		HttpSession httpSession = servletRequestAttribute.getRequest().getSession();
-		String loginId = httpSession.getAttribute("loginId").toString(); // todo: implement
+		String loginId = httpSession.getAttribute("loginId").toString(); 
 		User user = userJpaRepository.findByLoginId(loginId).orElseThrow(
 				()-> new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER));
 		user.pwUpdate(newPw);
 		userJpaRepository.save(user);
 	}
 	
-	public UserDto.Info userInfo(Info rqDto) {
-		List<UserInfo> idByUsername = userJpaRepository.getUsernameByUserId();
-		if(idByUsername.size()>0) {
-			rqDto.setUsername(idByUsername.get(0).getUsername());
+	// 유저 info 가져오기(
+	public UserDto.Info userInfo(Long id) {
+		Info rs = new Info();
+		List<UserInfoMapping> userInfoById = userJpaRepository.findAllById(id);
+		if(!userInfoById.isEmpty()) {
+			UserInfoMapping userInfo = userInfoById.stream().findFirst().get();
+			rs.setId(userInfo.getId());
+			rs.setUsername(userInfo.getUsername());
+		} else {
+			throw new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER);
 		}
-		return rqDto;
+		return rs;
 	}
 }

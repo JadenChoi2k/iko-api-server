@@ -21,7 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Entity
+@Entity(name="usr")
 @NoArgsConstructor
 @Table(name = "usr")
 public class User extends BaseTimeEntity {
@@ -72,29 +72,28 @@ public class User extends BaseTimeEntity {
 
     public static User dtoToEntity(JoinRequest rqDto) throws RuntimeException {
         User userJoinEntity = new User(rqDto);
-
-        userJoinEntity.password = User.SHA512(rqDto.getPassword());
+        userJoinEntity.password = rqDto.getPassword();
         userJoinEntity.birthday = DataUtils.parseBirthday(rqDto.getBirthday());
         userJoinEntity.pwUpdateDt = LocalDate.now();
         userJoinEntity.useYn = true;
         userJoinEntity.email = rqDto.getEmail();
         return userJoinEntity;
     }
-
-    public static String SHA512(String password) {
-        String salt = "aDielfksnelk34lksdf" + password;
-        String hex = null;
-        try {
-            MessageDigest msg = MessageDigest.getInstance("SHA-512");
-            msg.update(salt.getBytes());
-
-            hex = String.format("%128x", new BigInteger(1, msg.digest()));
-
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return hex;
-    }
+//
+//    public static String SHA512(String password) {
+//        String salt = "aDielfksnelk34lksdf" + password;
+//        String hex = null;
+//        try {
+//            MessageDigest msg = MessageDigest.getInstance("SHA-512");
+//            msg.update(salt.getBytes());
+//
+//            hex = String.format("%128x", new BigInteger(1, msg.digest()));
+//
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        }
+//        return hex;
+//    }
 
     public void update(UserDto.EditRequest rqDto) {
         if (null != rqDto.getUsername()) {
@@ -110,7 +109,7 @@ public class User extends BaseTimeEntity {
 
     public void pwUpdate(String password) {
         if (password != null) {
-            this.password = SHA512(password);
+            this.password = password;
             this.pwUpdateDt = LocalDate.now();
         } else {
             throw new InvalidParameterException("비밀번호없음");

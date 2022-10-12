@@ -11,7 +11,7 @@ public class DataUtils {
 
     public static LocalDate parseBirthday(String s) throws InvalidParameterException {
         LocalDate date = parseDate(s);
-        if (!validateBirthday(date)) {
+        if (validateBirthday(date)) {
             throw new InvalidParameterException("invalid birthday");
         }
         return date;

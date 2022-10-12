@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.iko.restapi.domain.user.User;
-import com.iko.restapi.domain.user.UserInfo;
+import com.iko.restapi.dto.UserInfoMapping;
 
 public interface UserJpaRepository extends JpaRepository<User, Long> {
 	Optional<User> findByLoginId(String loginId);
@@ -15,5 +15,6 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
 
 	boolean existsByLoginId(String id);
 	
-	List<UserInfo> getUsernameByUserId();
+	List<UserInfoMapping> findAllById(Long Id);
+	
 }
