@@ -11,10 +11,10 @@ public class SessionUtils {
     public static Long getUserId(HttpServletRequest request) {
         var session = request.getSession();
         var sessionNames = session.getAttributeNames();
-        while (sessionNames.hasMoreElements()) {
-            var name = sessionNames.nextElement();
-            log.info("[session] {}: {}", name, session.getAttribute(name));
-        }
+//        while (sessionNames.hasMoreElements()) {
+//            var name = sessionNames.nextElement();
+//            log.info("[session] {}: {}", name, session.getAttribute(name));
+//        }
         Object userId = request.getSession().getAttribute(SESSION_NAME);
         return (Long) userId;
     }

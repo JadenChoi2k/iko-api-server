@@ -7,6 +7,7 @@ import com.iko.restapi.common.response.CommonResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -20,6 +21,13 @@ public class ErrorControllerAdvice {
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     public CommonResponse baseException(BaseException e) {
         log.error("[{}][{}]: {}", e.getErrorCode().getStatus(),e.getErrorCode().getDescription(), e.getMessage());
+        return CommonResponse.fail(e);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    public CommonResponse validationError(MethodArgumentNotValidException e) {
+        log.error("[{}][{}]: ", e.getClass(), e.getMessage(), e);
         return CommonResponse.fail(e);
     }
 

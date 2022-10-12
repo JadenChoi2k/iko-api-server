@@ -22,7 +22,7 @@ public class UserController {
 	private final UserService userService;
 	
 	@GetMapping(value = "/exists/email")
-	public CommonResponse<UserDto.Exists> emailCheck(@RequestParam String email) {
+	public CommonResponse<UserDto.Exists> existsEmail(@RequestParam String email) {
 		return CommonResponse.success(
 				UserDto.Exists.builder()
 						.attribute("email")
@@ -32,7 +32,7 @@ public class UserController {
 	}
 	
 	@GetMapping(value = "/exists/loginId")
-	public CommonResponse<UserDto.Exists> loginIdCheck(@RequestParam String loginId) {
+	public CommonResponse<UserDto.Exists> existsLoginId(@RequestParam String loginId) {
 		return CommonResponse.success(
 				UserDto.Exists.builder()
 						.attribute("loginId")
@@ -59,14 +59,13 @@ public class UserController {
 	}
 
 	@PatchMapping("/me/password")
-	public CommonResponse<String> pwUpdate(@RequestBody UserDto.EditPasswordRequest rqDto) {
+	public CommonResponse<String> updatePassword(@RequestBody UserDto.EditPasswordRequest rqDto) {
 		userService.updatePassword(rqDto.getPassword());
-		return CommonResponse.success("success");
+		return CommonResponse.ok();
 	}
 
-	@GetMapping("/userInfo")
-	public CommonResponse<UserDto.Info> userInfo(@RequestParam Long id, HttpServletRequest request) {
-		log.info("userInfo Start.");
-		return CommonResponse.success(userService.userInfo(id));
+	@GetMapping("/{userId}")
+	public CommonResponse<UserDto.Info> userInfo(@PathVariable Long userId) {
+		return CommonResponse.success(userService.userInfo(userId));
 	}
 }

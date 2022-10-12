@@ -39,9 +39,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(new SessionAuthenticationFilter(authenticationManager(), passwordEncoder()))
                 .addFilter(new SessionAuthorizationFilter(authenticationManager(), userRepository))
                 .authorizeRequests()
-                    .antMatchers("/api/v1/user/join")
-                        .permitAll()
                     .antMatchers("/api/v1/user/**")
+                        .permitAll()
+                    .antMatchers("/api/v1/user/me/**")
                         .authenticated()
                     .anyRequest().permitAll();
     }

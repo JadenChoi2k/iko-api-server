@@ -1,5 +1,6 @@
 package com.iko.restapi.service.user;
 
+import com.iko.restapi.common.exception.EntityNotFoundException;
 import com.iko.restapi.common.exception.ErrorCode;
 import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.common.utils.SecurityUtils;
@@ -86,15 +87,12 @@ public class UserService {
 
 	// 유저 info 가져오기(
 	public UserDto.Info userInfo(Long id) {
-		UserDto.Info rs = new UserDto.Info();
-		List<UserInfoMapping> userInfoById = userJpaRepository.findAllById(id);
-		if(!userInfoById.isEmpty()) {
-			UserInfoMapping userInfo = userInfoById.stream().findFirst().get();
-			rs.setId(userInfo.getId());
-			rs.setUsername(userInfo.getUsername());
-		} else {
-			throw new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER);
-		}
-		return rs;
+		log.info("find user info - userId={}", id);
+		var userInfoById = userJpaRepository.findUserInfoById(id)
+				.orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다"));
+		return UserDto.Info.builder()
+				.id(userInfoById.getId())
+				.username(userInfoById.getUsername())
+				.build();
 	}
 }
