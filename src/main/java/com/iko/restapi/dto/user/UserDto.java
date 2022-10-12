@@ -1,15 +1,16 @@
-package com.iko.restapi.dto;
+package com.iko.restapi.dto.user;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.iko.restapi.dto.user.validation.LoginId;
+import com.iko.restapi.dto.user.validation.Password;
+import com.iko.restapi.dto.user.validation.Phone;
+import com.iko.restapi.dto.user.validation.Username;
 import com.iko.restapi.domain.user.User;
 
 import lombok.*;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.*;
 
 
 @Getter
@@ -20,9 +21,9 @@ public class UserDto {
 
 	@Data
 	public static class LoginRequest {
-		@NotBlank
+		@NotBlank(message = "아이디를 입력해주세요")
 		private String loginId;
-		@NotBlank
+		@NotBlank(message = "비밀번호를 입력해주세요")
 		private String password;
 	}
 
@@ -32,23 +33,22 @@ public class UserDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class JoinRequest {
-		@NotBlank
+		@LoginId
 		private String loginId;
-		@NotBlank
+		@Username
 		private String username;
-		@Email(message = "invalid email type")
+		@Email(message = "적절하지 않은 이메일 형식입니다")
 		private String email;
-		// todo: 폰넘버 타입 정의하기
-		@NotBlank
+		@Phone
 		private String phone;
-		// todo: 비밀번호 검증
-		@NotBlank
+		@Password
 		private String password;
-		// 날짜 여기서 검증하기
+		// todo: 날짜 검증 애노테이션 작성
 		@NotBlank
 		private String birthday;
 	}
 
+	// todo: nullable한 validation 애노테이션 작성
 	@Data
 	public static class EditRequest {
 		private String username;
@@ -58,8 +58,8 @@ public class UserDto {
 	}
 
 	@Data
-	public static class EditPwRequest {
-		@NotBlank
+	public static class EditPasswordRequest {
+		@NotBlank(message = "비밀번호를 입력해주세요")
 		private String password;
 	}
 
@@ -95,7 +95,7 @@ public class UserDto {
 			var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 			this.birthday = user.getBirthday().format(formatter);
 			this.joinedAt = user.getCreatedAt().format(formatter);
-			this.passwordUpdatedAt = user.getPwUpdateDt().format(formatter);
+			this.passwordUpdatedAt = user.getPasswordUpdatedAt().format(formatter);
 		}
 		
 		public static Detail from(User user) {
@@ -107,5 +107,6 @@ public class UserDto {
 	public static class Info {
 		private Long id;
 		private String username;
+		// 프로필 사진, 리뷰 개수 등 공개 가능한 정보만 필드에 작성
 	}
 }

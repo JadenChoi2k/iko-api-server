@@ -1,9 +1,8 @@
-package com.iko.restapi.dto;
+package com.iko.restapi.dto.product;
 
 import com.iko.restapi.domain.product.Product;
 import com.iko.restapi.domain.product.ProductOptionGroup;
 import com.iko.restapi.domain.product.ProductOptionItem;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

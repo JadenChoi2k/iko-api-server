@@ -41,7 +41,7 @@ public class PrincipalDetails implements UserDetails {
     // 1년을 기준으로 합니다
     @Override
     public boolean isCredentialsNonExpired() {
-        return !user.getPwUpdateDt().isBefore(LocalDate.now().minusYears(1));
+        return !user.getPasswordUpdatedAt().isBefore(LocalDate.now().minusYears(1));
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.iko.restapi.common.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iko.restapi.common.security.PrincipalDetails;
-import com.iko.restapi.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.iko.restapi.dto.UserDto.*;
+import static com.iko.restapi.dto.user.UserDto.*;
 
 @Slf4j
 @RequiredArgsConstructor

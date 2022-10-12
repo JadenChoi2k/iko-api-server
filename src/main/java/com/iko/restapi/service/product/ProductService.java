@@ -20,7 +20,7 @@ public class ProductService {
 
     public List<Product> products(int page, int size, String sortBy) {
         if (sortBy == null) {
-            // TODO: 통계를 기반한 추천순 쿼리
+            // TODO: 통계 기반 추천순 쿼리
             return productRepository.findAll(PageRequest.of(page, size)).toList();
         }
         if (sortBy.startsWith("date")) {

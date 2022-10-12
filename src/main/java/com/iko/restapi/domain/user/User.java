@@ -1,30 +1,17 @@
 package com.iko.restapi.domain.user;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.iko.restapi.common.entity.BaseTimeEntity;
-import com.iko.restapi.common.exception.BaseException;
-import com.iko.restapi.common.exception.ErrorCode;
 import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.common.utils.DataUtils;
-import com.iko.restapi.dto.UserDto;
-import com.iko.restapi.dto.UserDto.JoinRequest;
+import com.iko.restapi.dto.user.UserDto.JoinRequest;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @Entity
@@ -37,10 +24,14 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "login_id", unique = true)
+    @Enumerated(EnumType.STRING)
+    @Column(length = 15, nullable = false)
+    private Role role = Role.ROLE_MEMBER;
+
+    @Column(name = "login_id", unique = true, length = 30)
     private String loginId;
 
-    @Column(name = "username")
+    @Column(name = "username", length = 20)
     private String username;
 
     @Column(name = "email")
@@ -60,14 +51,15 @@ public class User extends BaseTimeEntity {
     private Boolean useYn;
 
     @Column(name = "pw_updt_dt")
-    private LocalDate pwUpdateDt;
+    private LocalDate passwordUpdatedAt;
 
-//	 Order, Cart 나중에 생성
-//   @OneToMany(mappedBy = "user", orphanRemoval = false )
-//   private List<Order> orders = new ArrayList<>();   
-//   
-//   @OneToMany(mappedBy = "user", orphanRemoval = false )
-//   private List<Cart> carts = new ArrayList<>();   
+    @Getter
+    @RequiredArgsConstructor
+    public enum Role {
+        ROLE_MEMBER("멤버"), ROLE_SELLER("판매자"), ROLE_ADMIN("관리자");
+
+        private final String description;
+    }
 
     User(JoinRequest rqDto) {
         this.loginId = rqDto.getLoginId();
@@ -76,57 +68,34 @@ public class User extends BaseTimeEntity {
         this.phone = rqDto.getPhone();
     }
 
-    public static User dtoToEntity(JoinRequest rqDto) throws RuntimeException {
-        User userJoinEntity = new User(rqDto);
+    public static User of(JoinRequest joinRequest) throws RuntimeException {
+        User joinUser = new User(joinRequest);
 
-        userJoinEntity.password = rqDto.getPassword();
-        userJoinEntity.birthday = DataUtils.parseBirthday(rqDto.getBirthday());
-        userJoinEntity.pwUpdateDt = LocalDate.now();
-        userJoinEntity.useYn = true;
-        userJoinEntity.email = rqDto.getEmail();
-        // 이메일 형식 검증
-        // 필드에서 @Email 통해 검증
-//        Pattern p = Pattern.compile("^[_a-z0-9-]+(.[_a-z0-9-]+)*@(?:\\w+\\.)+\\w+$");
-//        Matcher m = p.matcher(rqDto.getEmail());
-//        if (m.matches()) {
-//            userJoinEntity.email = rqDto.getEmail();
-//        } else {
-//            throw new BaseException("Wrong Email Address", ErrorCode.COMMON_INVALID_PARAMETER);
-//        }
-        return userJoinEntity;
+        joinUser.password = joinRequest.getPassword();
+        joinUser.birthday = DataUtils.parseBirthday(joinRequest.getBirthday());
+        joinUser.passwordUpdatedAt = LocalDate.now();
+        joinUser.useYn = true;
+        joinUser.email = joinRequest.getEmail();
+
+        return joinUser;
     }
 
-    public static String SHA512(String password) {
-        String salt = "aDielfksnelk34lksdf" + password;
-        String hex = null;
-        try {
-            MessageDigest msg = MessageDigest.getInstance("SHA-512");
-            msg.update(salt.getBytes());
-
-            hex = String.format("%128x", new BigInteger(1, msg.digest()));
-
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+    public void updateProfile(String username, String phone, String email) {
+        if (username != null) {
+            this.username = username;
         }
-        return hex;
-    }
-
-    public void update(UserDto.EditRequest rqDto) {
-        if (null != rqDto.getUsername()) {
-            this.username = rqDto.getUsername();
+        if (phone != null) {
+            this.phone = phone;
         }
-        if (null != rqDto.getPhone()) {
-            this.phone = rqDto.getPhone();
-        }
-        if (null != rqDto.getEmail()) {
-            this.email = rqDto.getEmail();
+        if (email != null) {
+            this.email = email;
         }
     }
 
-    public void pwUpdate(String password) {
+    public void updatePassword(String password) {
         if (password != null) {
-            this.password = SHA512(password);
-            this.pwUpdateDt = LocalDate.now();
+            this.password = password;
+            this.passwordUpdatedAt = LocalDate.now();
         } else {
             throw new InvalidParameterException("비밀번호없음");
         }

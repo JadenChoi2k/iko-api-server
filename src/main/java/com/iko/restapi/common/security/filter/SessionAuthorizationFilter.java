@@ -4,7 +4,7 @@ import com.iko.restapi.common.exception.EntityNotFoundException;
 import com.iko.restapi.common.security.PrincipalDetails;
 import com.iko.restapi.common.utils.SessionUtils;
 import com.iko.restapi.domain.user.User;
-import com.iko.restapi.repository.User.UserJpaRepository;
+import com.iko.restapi.repository.user.UserJpaRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +17,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 @Slf4j
 public class SessionAuthorizationFilter extends BasicAuthenticationFilter {

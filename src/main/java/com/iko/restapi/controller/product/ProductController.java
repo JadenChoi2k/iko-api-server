@@ -3,7 +3,7 @@ package com.iko.restapi.controller.product;
 import com.iko.restapi.common.config.SwaggerConfig;
 import com.iko.restapi.common.response.CommonResponse;
 import com.iko.restapi.common.response.PaginationResponse;
-import com.iko.restapi.dto.ProductDto;
+import com.iko.restapi.dto.product.ProductDto;
 import com.iko.restapi.service.product.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;

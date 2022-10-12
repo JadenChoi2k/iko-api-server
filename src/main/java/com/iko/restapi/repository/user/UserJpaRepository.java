@@ -1,4 +1,4 @@
-package com.iko.restapi.repository.User;
+package com.iko.restapi.repository.user;
 
 import java.util.Optional;
 
