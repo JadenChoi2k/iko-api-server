@@ -12,6 +12,8 @@ import com.iko.restapi.service.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Slf4j
 @RequestMapping("/api/v1/user")
 @RestController
@@ -60,5 +62,11 @@ public class UserController {
 	public CommonResponse<String> pwUpdate(@RequestBody UserDto.EditPasswordRequest rqDto) {
 		userService.updatePassword(rqDto.getPassword());
 		return CommonResponse.success("success");
+	}
+
+	@GetMapping("/userInfo")
+	public CommonResponse<UserDto.Info> userInfo(@RequestParam Long id, HttpServletRequest request) {
+		log.info("userInfo Start.");
+		return CommonResponse.success(userService.userInfo(id));
 	}
 }

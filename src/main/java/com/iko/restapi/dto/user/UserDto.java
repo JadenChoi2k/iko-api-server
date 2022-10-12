@@ -1,16 +1,22 @@
 package com.iko.restapi.dto.user;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import com.iko.restapi.dto.user.validation.LoginId;
-import com.iko.restapi.dto.user.validation.Password;
-import com.iko.restapi.dto.user.validation.Phone;
-import com.iko.restapi.dto.user.validation.Username;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 import com.iko.restapi.domain.user.User;
 
-import lombok.*;
-
-import javax.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 
 @Getter
@@ -33,22 +39,27 @@ public class UserDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class JoinRequest {
-		@LoginId
-		private String loginId;
-		@Username
-		private String username;
-		@Email(message = "적절하지 않은 이메일 형식입니다")
-		private String email;
-		@Phone
-		private String phone;
-		@Password
-		private String password;
-		// todo: 날짜 검증 애노테이션 작성
 		@NotBlank
+		@Size(min=4, max=12, message="set Id between 6~12 long")
+		private String loginId;
+		@NotBlank
+		private String username;
+		@Email(message = "invalid email type")
+		private String email;
+		// 폰넘버 타입 정의하기
+		@NotBlank
+		@Pattern(regexp="^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$", message="invalid phone number")
+		private String phone;
+		// 비밀번호 검증 (사용자 PW - (영문, 특수문자, 숫자 포함 8자 이상 ~ 20자))
+		@NotBlank
+		@Pattern(regexp="^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$", message="invalid password")
+		private String password;
+		// 날짜 여기서 검증하기
+		@NotBlank
+//		@Pattern(regexp="^((19|20)\\\\d\\\\d)?([- /.])?(0[1-9]|1[012])([- /.])?(0[1-9]|[12][0-9]|3[01])$")
 		private String birthday;
 	}
 
-	// todo: nullable한 validation 애노테이션 작성
 	@Data
 	public static class EditRequest {
 		private String username;

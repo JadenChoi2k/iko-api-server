@@ -1,7 +1,9 @@
 package com.iko.restapi.service.user;
 
+import com.iko.restapi.common.exception.ErrorCode;
 import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.common.utils.SecurityUtils;
+import com.iko.restapi.dto.UserInfoMapping;
 import com.iko.restapi.dto.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,8 @@ import com.iko.restapi.dto.user.UserDto.JoinRequest;
 import com.iko.restapi.dto.user.UserDto.Detail;
 import com.iko.restapi.repository.user.UserJpaRepository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -78,5 +82,19 @@ public class UserService {
 		log.info("user({}) updated password", user.getId());
 		user.updatePassword(passwordEncoder.encode(password));
 		userJpaRepository.save(user);
+	}
+
+	// 유저 info 가져오기(
+	public UserDto.Info userInfo(Long id) {
+		UserDto.Info rs = new UserDto.Info();
+		List<UserInfoMapping> userInfoById = userJpaRepository.findAllById(id);
+		if(!userInfoById.isEmpty()) {
+			UserInfoMapping userInfo = userInfoById.stream().findFirst().get();
+			rs.setId(userInfo.getId());
+			rs.setUsername(userInfo.getUsername());
+		} else {
+			throw new BaseException("아이디없음", ErrorCode.COMMON_INVALID_PARAMETER);
+		}
+		return rs;
 	}
 }
