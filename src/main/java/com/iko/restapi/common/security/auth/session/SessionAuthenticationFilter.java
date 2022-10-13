@@ -1,4 +1,4 @@
-package com.iko.restapi.common.security.filter;
+package com.iko.restapi.common.security.auth.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iko.restapi.common.security.PrincipalDetails;

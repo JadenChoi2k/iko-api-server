@@ -1,5 +1,6 @@
 package com.iko.restapi.common.response;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -29,8 +30,11 @@ public class PaginationResponse<T> extends CommonResponse<List<T>> {
     @Data
     @Builder
     static class Meta {
+        @ApiModelProperty(example = "0")
         private int page;
+        @ApiModelProperty(example = "20")
         private int size;
+        @ApiModelProperty(example = "date_desc")
         private String orderBy;
     }
 }

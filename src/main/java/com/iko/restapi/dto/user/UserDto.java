@@ -1,5 +1,6 @@
 package com.iko.restapi.dto.user;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import javax.validation.constraints.*;
@@ -80,7 +81,7 @@ public class UserDto {
 	@Builder
 	public static class Exists {
 		private String attribute;
-		private Boolean result;
+		private Boolean exists;
 	}
 
 	@ToString

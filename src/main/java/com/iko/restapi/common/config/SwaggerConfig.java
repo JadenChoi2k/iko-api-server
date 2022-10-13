@@ -2,12 +2,14 @@ package com.iko.restapi.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.context.SecurityContextHolder;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Tag;
 import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
     public static final String PRODUCT_TAG = "Product";
+    public static final String USER_TAG = "User";
 
     @Bean
     public Docket api() {
@@ -25,18 +28,17 @@ public class SwaggerConfig {
                     .paths(PathSelectors.any())
                     .build()
                 .tags(
-                        createTag(PRODUCT_TAG, "제품")
+                        createTag(PRODUCT_TAG, "제품"),
+                        createTag(USER_TAG, "유저")
                 )
                 .apiInfo(apiInfo());
     }
-
-
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("IKO REST API Server")
                 .description("<h2>IKO 웹서버 API 문서입니다</h2>")
-                .version("0.1.0")
+                .version("0.0.2")
                 .build();
     }
 

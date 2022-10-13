@@ -3,10 +3,13 @@ package com.iko.restapi.dto.product;
 import com.iko.restapi.domain.product.Product;
 import com.iko.restapi.domain.product.ProductOptionGroup;
 import com.iko.restapi.domain.product.ProductOptionItem;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,36 +20,37 @@ public class ProductDto {
 
     @ApiModel
     @Getter
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class PageItem {
-        @ApiModelProperty("아이디")
+        @ApiModelProperty(value = "아이디", example = "1616006")
         private Long id;
-        @ApiModelProperty("이름")
+        @ApiModelProperty(value = "이름", example = "ベア·ブラウン")
         private String name;
-        @ApiModelProperty(value = "한국어이름", allowEmptyValue = true)
+        @ApiModelProperty(value = "한국어이름", allowEmptyValue = true, example = "베어 [ 브라운 ] 1개월용")
         private String nameKor;
-        @ApiModelProperty("타이틀")
+        @ApiModelProperty(value = "타이틀", example = "ベア·ブラウン")
         private String title;
-        @ApiModelProperty("브랜드")
+        @ApiModelProperty(value = "브랜드", example = "Layered")
         private String brand;
-        @ApiModelProperty("소비자가격")
+        @ApiModelProperty(value = "소비자가격", example = "2200")
         private Integer consumerPrice;
-        @ApiModelProperty("판매가")
+        @ApiModelProperty(value = "판매가", example = "1800")
         private Integer sellPrice;
-        @ApiModelProperty("판매 여부")
+        @ApiModelProperty(value = "판매 여부", example = "true")
         private Boolean selling;
-        @ApiModelProperty("품절 여부")
+        @ApiModelProperty(value = "품절 여부", example = "false")
         private Boolean soldOut;
-        @ApiModelProperty("기본배송비")
+        @ApiModelProperty(value = "기본배송비", example = "500")
         private Integer defaultDeliveryFee;
-        @ApiModelProperty("무료배송가격")
+        @ApiModelProperty(value = "무료배송가격", example = "4500")
         private Integer freeDeliveryFee;
-        @ApiModelProperty("컬러 이름")
+        @ApiModelProperty(value = "컬러 이름", example = "ブラウン")
         private String colorName;
-        @ApiModelProperty("컬러 코드")
+        @ApiModelProperty(value = "컬러 코드", example = "#524333")
         private String colorCode;
-        @ApiModelProperty("이미지 1")
+        @ApiModelProperty(value = "이미지 1", example = "https://lenssis.jp/data/item/0001616006/7Iqk7YWU652867iM65287Jq0_1month_7IOB7IS4.jpg")
         private String image1;
-        @ApiModelProperty("이미지 2")
+        @ApiModelProperty(value = "이미지 2", example = "https://lenssis.jp/data/item/0001616006/7Iqk7YWU652867iM65287Jq0_67Kg7Iqk7Yq466qo64247IKs7KeE.jpg")
         private String image2;
 
         PageItem(
@@ -94,22 +98,22 @@ public class ProductDto {
 
     @ApiModel
     @Getter
-    public static class Detail {
-        private Long id;
-        private String name;
-        private String nameKor;
-        private String title;
+    public static class Detail extends PageItem {
+//        private Long id;
+//        private String name;
+//        private String nameKor;
+//        private String title;
         private String manufacturer;
-        private String brand;
+//        private String brand;
         private List<OptionGroup> options;
         @ApiModelProperty("상세 내용")
         private String description;
-        private Integer consumerPrice;
-        private Integer sellPrice;
-        private Boolean selling;
-        private Boolean soldOut;
-        private Integer defaultDeliveryFee;
-        private Integer freeDeliveryFee;
+//        private Integer consumerPrice;
+//        private Integer sellPrice;
+//        private Boolean selling;
+//        private Boolean soldOut;
+//        private Integer defaultDeliveryFee;
+//        private Integer freeDeliveryFee;
         @ApiModelProperty("seo 타이틀")
         private String seoTitle;
         @ApiModelProperty("seo 설명")
@@ -122,36 +126,36 @@ public class ProductDto {
         private String generalDeliveryGuide;
         @ApiModelProperty("빠른 배송 가이드")
         private String speedDeliveryGuide;
-        private String colorName;
-        private String colorCode;
-        private String image1;
-        private String image2;
+//        private String colorName;
+//        private String colorCode;
+//        private String image1;
+//        private String image2;
 
         Detail(Long id, String name, String nameKor, String title, String manufacturer, String brand, List<OptionGroup> options, String description, Integer consumerPrice, Integer sellPrice, Boolean selling, Boolean soldOut, Integer defaultDeliveryFee, Integer freeDeliveryFee, String seoTitle, String seoDescription, String seoKeyword, String seoStandard, String generalDeliveryGuide, String speedDeliveryGuide, String colorName, String colorCode, String image1, String image2) {
-            this.id = id;
-            this.name = name;
-            this.nameKor = nameKor;
-            this.title = title;
+            super.id = id;
+            super.name = name;
+            super.nameKor = nameKor;
+            super.title = title;
             this.manufacturer = manufacturer;
-            this.brand = brand;
+            super.brand = brand;
             this.options = options;
             this.description = description;
-            this.consumerPrice = consumerPrice;
-            this.sellPrice = sellPrice;
-            this.selling = selling;
-            this.soldOut = soldOut;
-            this.defaultDeliveryFee = defaultDeliveryFee;
-            this.freeDeliveryFee = freeDeliveryFee;
+            super.consumerPrice = consumerPrice;
+            super.sellPrice = sellPrice;
+            super.selling = selling;
+            super.soldOut = soldOut;
+            super.defaultDeliveryFee = defaultDeliveryFee;
+            super.freeDeliveryFee = freeDeliveryFee;
             this.seoTitle = seoTitle;
             this.seoDescription = seoDescription;
             this.seoKeyword = seoKeyword;
             this.seoStandard = seoStandard;
             this.generalDeliveryGuide = generalDeliveryGuide;
             this.speedDeliveryGuide = speedDeliveryGuide;
-            this.colorName = colorName;
-            this.colorCode = colorCode;
-            this.image1 = image1;
-            this.image2 = image2;
+            super.colorName = colorName;
+            super.colorCode = colorCode;
+            super.image1 = image1;
+            super.image2 = image2;
         }
 
         public static Detail of(Product product) {
@@ -184,6 +188,7 @@ public class ProductDto {
         }
     }
 
+    @ApiModel
     @Data
     static class OptionGroup {
         private Long groupId;
@@ -208,6 +213,7 @@ public class ProductDto {
         }
     }
 
+    @ApiModel
     @Data
     static class OptionItem {
         private String name;
