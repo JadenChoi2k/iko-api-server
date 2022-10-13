@@ -92,6 +92,7 @@ public class UserDto {
 		private Long id;
 		private String loginId;
 		private String username;
+		private User.Gender gender;
 		private String email;
 		private String phone;
 		private String birthday;
@@ -102,6 +103,7 @@ public class UserDto {
 			this.id = user.getId();
 			this.loginId = user.getLoginId();
 			this.username = user.getUsername();
+			this.gender = user.getGender();
 			this.email = user.getEmail();
 			this.phone = user.getPhone();
 			var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
