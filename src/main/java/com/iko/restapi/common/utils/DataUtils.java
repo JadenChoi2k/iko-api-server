@@ -10,6 +10,7 @@ public class DataUtils {
     }
 
     public static LocalDate parseBirthday(String s) throws InvalidParameterException {
+        if (s == null) return null;
         LocalDate date = parseDate(s);
         if (!validateBirthday(date)) {
             throw new InvalidParameterException("invalid birthday");

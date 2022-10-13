@@ -1,13 +1,14 @@
 package com.iko.restapi.dto.user;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import javax.validation.constraints.*;
 
 import com.iko.restapi.domain.user.User;
 
-import com.iko.restapi.dto.user.validation.*;
+import com.iko.restapi.dto.user.validation.annotation.DateNullable;
+import com.iko.restapi.dto.user.validation.annotation.GenderNullable;
+import com.iko.restapi.dto.user.validation.annotation.PhoneNullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,16 +44,19 @@ public class UserDto {
 		@NotBlank
 		@Pattern(regexp = "[a-zA-Z0-9가-힣]{2,20}", message = "유저 이름은 영어, 숫자, 한글로 이루어진 2~20자의 문자열입니다")
 		private String username;
+		@GenderNullable
+		private String gender;
 		@Email(message = "적절하지 않은 이메일 형식입니다")
 		private String email;
 		// 폰넘버 타입 정의하기
-		@Pattern(regexp="^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$", message="적절하지 않은 전화번호 형식입니다")
+//		@Pattern(regexp="^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$", message="적절하지 않은 전화번호 형식입니다")
+		@PhoneNullable
 		private String phone;
 		// 비밀번호 검증 (사용자 PW - (영문, 특수문자, 숫자 포함 8자 이상 ~ 20자))
 		@Pattern(regexp="^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,30}$", message="비밀번호는 영문, 특수문자, 숫자를 포함한 8~30자의 문자열입니다")
 		private String password;
 		// 날짜 여기서 검증하기
-		@Pattern(regexp="([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))", message = "적절하지 않은 날짜 형식입니다")
+		@DateNullable
 		private String birthday;
 	}
 
@@ -100,7 +104,7 @@ public class UserDto {
 			this.email = user.getEmail();
 			this.phone = user.getPhone();
 			var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			this.birthday = user.getBirthday().format(formatter);
+			this.birthday = user.getBirthday() != null ? user.getBirthday().format(formatter) : null;
 			this.joinedAt = user.getCreatedAt().format(formatter);
 			this.passwordUpdatedAt = user.getPasswordUpdatedAt().format(formatter);
 		}

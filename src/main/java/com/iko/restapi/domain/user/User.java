@@ -9,13 +9,14 @@ import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.common.utils.DataUtils;
 import com.iko.restapi.dto.user.UserDto.JoinRequest;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "usr")
 public class User extends BaseTimeEntity {
 
@@ -28,19 +29,23 @@ public class User extends BaseTimeEntity {
     @Column(length = 15, nullable = false)
     private Role role = Role.ROLE_MEMBER;
 
-    @Column(name = "login_id", unique = true, length = 30)
+    @Column(name = "login_id", unique = true, length = 30, nullable = false)
     private String loginId;
 
-    @Column(name = "username", length = 20)
+    @Column(name = "username", length = 20, nullable = false)
     private String username;
 
-    @Column(name = "email")
+    @Column(name = "gender", length = 1)
+    @Enumerated(EnumType.STRING)
+    private Gender gender = Gender.X;
+
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "pswd")
+    @Column(name = "pswd", nullable = false)
     private String password;
 
     @Column(name = "birthday")
@@ -48,7 +53,7 @@ public class User extends BaseTimeEntity {
 
     // 계정의 사용여부
     @Column(name = "use_yn")
-    private Boolean useYn;
+    private Boolean useYn = true;
 
     @Column(name = "pw_updt_dt")
     private LocalDate passwordUpdatedAt;
@@ -60,22 +65,39 @@ public class User extends BaseTimeEntity {
 
         private final String description;
     }
+    
+    @Getter
+    @RequiredArgsConstructor
+    public enum Gender {
+        M("남성"), F("여성"), X("없음");
+        
+        private final String description;
 
-    User(JoinRequest rqDto) {
-        this.loginId = rqDto.getLoginId();
-        this.username = rqDto.getUsername();
-        this.email = rqDto.getEmail();
-        this.phone = rqDto.getPhone();
+        static Gender from(String s) {
+            if (s == null) return X;
+            switch (s) {
+                case "M":
+                    return M;
+                case "F":
+                    return F;
+                default:
+                    return X;
+            }
+        }
     }
 
     public static User of(JoinRequest joinRequest) throws RuntimeException {
-        User joinUser = new User(joinRequest);
+        User joinUser = new User();
 
+        joinUser.loginId = joinRequest.getLoginId();
+        joinUser.username = joinRequest.getUsername();
+        joinUser.gender = Gender.from(joinRequest.getGender());
+        joinUser.email = joinRequest.getEmail();
+        joinUser.phone = joinRequest.getPhone();
         joinUser.password = joinRequest.getPassword();
         joinUser.birthday = DataUtils.parseBirthday(joinRequest.getBirthday());
         joinUser.passwordUpdatedAt = LocalDate.now();
         joinUser.useYn = true;
-        joinUser.email = joinRequest.getEmail();
 
         return joinUser;
     }
