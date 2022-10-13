@@ -1,4 +1,4 @@
-package com.iko.restapi.common.security.filter;
+package com.iko.restapi.common.security.auth.session;
 
 import com.iko.restapi.common.exception.EntityNotFoundException;
 import com.iko.restapi.common.security.PrincipalDetails;

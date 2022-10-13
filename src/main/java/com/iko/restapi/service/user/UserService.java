@@ -30,7 +30,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public boolean existsEmail(String email) {
 		boolean result = userJpaRepository.existsByEmail(email);
-		log.info("email Exist Check Result : " + result);
+		log.info("email Exist Check Result : {}", result);
 		return result;
 	}
 	

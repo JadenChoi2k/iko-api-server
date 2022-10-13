@@ -5,19 +5,24 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.exception.ErrorCode;
 import com.iko.restapi.common.exception.InvalidParameterException;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class CommonResponse<T> {
+    @ApiModelProperty(example = "200")
     private int code;
+    @ApiModelProperty(hidden = true)
     private String errorCode;
+    @ApiModelProperty(example = "ok")
     private String msg;
     private T data;
 

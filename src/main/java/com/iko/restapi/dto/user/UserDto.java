@@ -1,13 +1,11 @@
 package com.iko.restapi.dto.user;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import javax.validation.constraints.*;
 
 import com.iko.restapi.domain.user.User;
 
-import com.iko.restapi.dto.user.validation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -76,7 +74,7 @@ public class UserDto {
 	@Builder
 	public static class Exists {
 		private String attribute;
-		private Boolean result;
+		private Boolean exists;
 	}
 
 	@ToString
@@ -85,6 +83,7 @@ public class UserDto {
 	@NoArgsConstructor
 	public static class Detail {
 		private Long id;
+		private User.Role role;
 		private String loginId;
 		private String username;
 		private String email;
@@ -95,6 +94,7 @@ public class UserDto {
 		
 		Detail(User user) {
 			this.id = user.getId();
+			this.role = user.getRole();
 			this.loginId = user.getLoginId();
 			this.username = user.getUsername();
 			this.email = user.getEmail();

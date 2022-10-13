@@ -51,7 +51,12 @@ public class ProductController {
     }
 
     /* 관리자 접근 path */
-
+    
+//    @GetMapping("/{productId}/stats")
+//    public CommonResponse productStats(@PathVariable Long productId) {
+//        제품 통계
+//    }
+//    
 //    @PostMapping
 //    public CommonResponse createProduct() {
 //        제품 생성

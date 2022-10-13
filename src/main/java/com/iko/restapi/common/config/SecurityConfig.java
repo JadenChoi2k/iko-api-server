@@ -1,8 +1,8 @@
 package com.iko.restapi.common.config;
 
 import com.iko.restapi.common.security.filter.LogoutSuccessHandlerImpl;
-import com.iko.restapi.common.security.filter.SessionAuthenticationFilter;
-import com.iko.restapi.common.security.filter.SessionAuthorizationFilter;
+import com.iko.restapi.common.security.auth.session.SessionAuthenticationFilter;
+import com.iko.restapi.common.security.auth.session.SessionAuthorizationFilter;
 import com.iko.restapi.repository.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
