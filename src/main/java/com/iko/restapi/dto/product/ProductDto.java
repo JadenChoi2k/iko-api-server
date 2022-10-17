@@ -215,7 +215,7 @@ public class ProductDto {
 
     @ApiModel
     @Data
-    static class OptionItem {
+    public static class OptionItem {
         private String name;
         private String value;
         private Integer price;

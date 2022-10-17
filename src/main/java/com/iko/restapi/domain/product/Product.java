@@ -8,10 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Entity
@@ -128,7 +126,7 @@ public class Product extends BaseTimeEntity {
     }
 
     public int wholePrice(List<ProductOptionItem> selected) {
-        return selected.stream().reduce(0, (x, y) -> x + y.getPrice(), Integer::sum);
+        return selected.stream().reduce(this.sellPrice, (x, y) -> x + y.getPrice(), Integer::sum);
     }
 
     public void validateSelected(Map<ProductOptionGroup, ProductOptionItem> selected) {
@@ -144,6 +142,7 @@ public class Product extends BaseTimeEntity {
     }
 
     public void validateSelected(List<ProductOptionItem> selected) {
+        // 필수 옵션 선택 여부 확인
         options.forEach(og -> {
             if (og.getOptional()) {
                 return;
@@ -154,6 +153,11 @@ public class Product extends BaseTimeEntity {
                         throw new InvalidParameterException("필수 옵션을 선택해주세요");
                     });
         });
+        // 옵션 그룹 내 중복 선택 여부 확인
+        int setSize = selected.stream().map((opt) -> opt.getGroup().getId()).collect(Collectors.toSet()).size();
+        if (setSize != selected.size()) {
+            throw new InvalidParameterException("동일 옵션이 중복 선택되었습니다");
+        }
     }
 
     /**
@@ -162,7 +166,7 @@ public class Product extends BaseTimeEntity {
      * @return 선택된 옵션 목록 (optionGroup, optionItem 쌍)
      * @throws InvalidParameterException : 필수 선택값 미선택 시 발생
      */
-    public Map<ProductOptionGroup, ProductOptionItem> selectOptions(Map<String, String> select) {
+    public Map<ProductOptionGroup, ProductOptionItem> selectOptions(Map<String, String> select) throws InvalidParameterException {
         Map<ProductOptionGroup, ProductOptionItem> selected = new HashMap<>();
         for (String groupName: select.keySet()) {
             var optionGroup = options.stream()
@@ -175,5 +179,23 @@ public class Product extends BaseTimeEntity {
         // optional = false인 group들 선택되었는지 검증
         validateSelected(selected);
         return selected;
+    }
+
+    // option item의 아이디 목록을 통해서 선택한다.
+    public List<ProductOptionItem> selectOptions(List<Long> optionItemIdList) throws EntityNotFoundException, InvalidParameterException {
+        Map<Long, ProductOptionItem> idToOptionItemMap = new HashMap<>();
+        for (var group: options) {
+            for (var item: group.getItems()) {
+                idToOptionItemMap.put(item.getId(), item);
+            }
+        }
+        List<ProductOptionItem> result = optionItemIdList.stream()
+                .map((optId) -> idToOptionItemMap.getOrDefault(optId, null))
+                .peek((opt) -> {
+                    if (opt == null) throw new EntityNotFoundException("존재하지 않는 옵션입니다");
+                })
+                .collect(Collectors.toList());
+        validateSelected(result);
+        return result;
     }
 }
