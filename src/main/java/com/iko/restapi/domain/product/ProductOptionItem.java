@@ -30,14 +30,23 @@ public class ProductOptionItem {
     @Column(nullable = false)
     private Integer price = 0;
 
-    public ProductOptionItem(ProductOptionGroup group, String name, String value) {
-        this(name, value);
+    public ProductOptionItem(ProductOptionGroup group, String name, String value, int price) {
+        this(name, value, price);
         this.group = group;
     }
 
-    public ProductOptionItem(String name, String value) {
+    public ProductOptionItem(String name, String value, int price) {
         this.name = name;
         this.optionValue = value;
+        this.price = price;
+    }
+
+    // for test
+    public ProductOptionItem(Long id, String name, String value, int price) {
+        this.id = id;
+        this.name = name;
+        this.optionValue = value;
+        this.price = price;
     }
 
     public ProductOptionItem changePrice(int price) {

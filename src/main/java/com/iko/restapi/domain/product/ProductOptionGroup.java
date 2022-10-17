@@ -1,5 +1,6 @@
 package com.iko.restapi.domain.product;
 
+import com.iko.restapi.common.exception.EntityNotFoundException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,6 +33,11 @@ public class ProductOptionGroup {
     @Setter
     @Column(nullable = false)
     private Boolean optional = true;
+
+    public ProductOptionGroup(Long id, Product product, String optionName, List<ProductOptionItem> items) {
+        this(product, optionName, items);
+        this.id = id;
+    }
 
     public ProductOptionGroup(Product product, String optionName, List<ProductOptionItem> items) {
         this(optionName, items);

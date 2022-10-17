@@ -114,6 +114,10 @@ public class User extends BaseTimeEntity {
         }
     }
 
+    /**
+     * 인코딩된 패스워드만 입력되도록 한다
+     * @param password
+     */
     public void updatePassword(String password) {
         if (password != null) {
             this.password = password;
