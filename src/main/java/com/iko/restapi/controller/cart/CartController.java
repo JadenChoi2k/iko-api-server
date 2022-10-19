@@ -45,6 +45,7 @@ public class CartController {
         );
     }
 
+    @Operation(summary = "카트 아이템 수정", description = "카트 아이템을 수정한다")
     @PatchMapping("/{cartItemId}")
     public CommonResponse<CartDto.Main> editCartItem(HttpServletRequest request,
                                                      @PathVariable Long cartItemId,
