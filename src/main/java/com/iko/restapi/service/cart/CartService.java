@@ -9,7 +9,6 @@ import com.iko.restapi.domain.product.ProductOptionItem;
 import com.iko.restapi.repository.cart.CartItemJpaRepository;
 import com.iko.restapi.repository.product.ProductJpaRepository;
 import com.iko.restapi.repository.user.UserJpaRepository;
-import com.iko.restapi.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -72,6 +70,7 @@ public class CartService {
         cartItemRepository.deleteById(itemId);
     }
 
+    @Transactional
     public void removeAllCartItems(Long userId) {
         log.info("remove all cart items (user_id={})", userId);
         cartItemRepository.deleteAllItemsByUserId(userId);
