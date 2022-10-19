@@ -18,6 +18,7 @@ import java.util.List;
 public class SwaggerConfig {
     public static final String PRODUCT_TAG = "Product";
     public static final String USER_TAG = "User";
+    public static final String CART_TAG = "Cart";
 
     @Bean
     public Docket api() {
@@ -29,7 +30,8 @@ public class SwaggerConfig {
                     .build()
                 .tags(
                         createTag(PRODUCT_TAG, "제품"),
-                        createTag(USER_TAG, "유저")
+                        createTag(USER_TAG, "유저"),
+                        createTag(CART_TAG, "카트")
                 )
                 .apiInfo(apiInfo());
     }

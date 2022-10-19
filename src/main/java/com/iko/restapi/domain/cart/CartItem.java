@@ -1,5 +1,6 @@
 package com.iko.restapi.domain.cart;
 
+import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.domain.product.Product;
 import com.iko.restapi.domain.product.ProductOptionItem;
@@ -7,6 +8,7 @@ import com.iko.restapi.domain.user.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -30,9 +32,10 @@ public class CartItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @OneToMany(mappedBy = "cartItem")
+    @OneToMany(mappedBy = "cartItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItemOptionItem> options = new ArrayList<>();
 
+    @Setter
     @Column(nullable = false)
     private Integer count = 1;
 
@@ -55,5 +58,12 @@ public class CartItem {
                 .collect(Collectors.toList());
         cartItem.count = count;
         return cartItem;
+    }
+
+    public void changeOptions(List<ProductOptionItem> changeOptions) throws BaseException {
+        product.validateSelected(changeOptions);
+        this.options = changeOptions.stream()
+                .map((opt) -> CartItemOptionItem.create(this, opt))
+                .collect(Collectors.toList());
     }
 }

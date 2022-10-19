@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,10 +38,7 @@ public class CartService {
                 .findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("제품을 찾을 수 없습니다"));
         // TODO: 이후 Product 리포지토리 계층에서 수정
-        List<ProductOptionItem> productOptionItems = em.createQuery("select opt from ProductOptionItem opt" +
-                        " where opt.id in :optionIdList", ProductOptionItem.class)
-                .setParameter("optionIdList", optionIdList)
-                .getResultList();
+        List<ProductOptionItem> productOptionItems = fetchAllProductOptionItems(optionIdList);
         // if not valid, throws Exception
         product.validateSelected(productOptionItems);
         // create
@@ -54,6 +52,23 @@ public class CartService {
         return cartItemRepository.findAllItemsByUserId(userId);
     }
 
+    @Transactional
+    public CartItem editCartItem(Long userId, Long cartItemId, List<Long> optionIdList, Integer count) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 카트 아이템입니다"));
+        if (!cartItem.getUser().getId().equals(userId)) {
+            throw new InvalidAccessException("권한이 없습니다");
+        }
+        if (optionIdList != null) {
+            List<ProductOptionItem> productOptionItems = fetchAllProductOptionItems(optionIdList);
+            cartItem.changeOptions(productOptionItems);
+        }
+        if (count != null) {
+            cartItem.setCount(count);
+        }
+        return cartItem;
+    }
+    
     @Transactional
     public void removeCartItem(Long itemId, Long userId) throws BaseException {
         log.info("remove cart item (user_id={})", userId);
@@ -74,5 +89,16 @@ public class CartService {
     public void removeAllCartItems(Long userId) {
         log.info("remove all cart items (user_id={})", userId);
         cartItemRepository.deleteAllItemsByUserId(userId);
+    }
+    
+    // TODO: Product Repository에 반영
+    private List<ProductOptionItem> fetchAllProductOptionItems(List<Long> optionIdList) {
+        if (optionIdList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return em.createQuery("select opt from ProductOptionItem opt" +
+                        " where opt.id in :optionIdList", ProductOptionItem.class)
+                .setParameter("optionIdList", optionIdList)
+                .getResultList();
     }
 }
