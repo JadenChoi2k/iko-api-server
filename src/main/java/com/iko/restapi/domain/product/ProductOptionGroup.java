@@ -1,5 +1,6 @@
 package com.iko.restapi.domain.product;
 
+import com.iko.restapi.common.entity.BaseTimeEntity;
 import com.iko.restapi.common.exception.EntityNotFoundException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 @Getter
 @Entity
 @NoArgsConstructor
-public class ProductOptionGroup {
+public class ProductOptionGroup extends BaseTimeEntity {
     @Id
     @GeneratedValue
     @Column(name = "product_option_id")

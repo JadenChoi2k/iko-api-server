@@ -1,0 +1,91 @@
+package com.iko.restapi.service.order;
+
+import com.iko.restapi.common.exception.EntityNotFoundException;
+import com.iko.restapi.common.exception.InvalidAccessException;
+import com.iko.restapi.domain.order.Order;
+import com.iko.restapi.domain.order.OrderItem;
+import com.iko.restapi.repository.order.OrderItemJpaRepository;
+import com.iko.restapi.repository.order.OrderJpaRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class OrderService {
+    private final OrderJpaRepository orderRepository;
+    private final OrderItemJpaRepository orderItemRepository;
+
+    // 카트에 있는 장바구니 아이템을 기반으로 주문 생성
+    public Order createOrder(Long userId, List<Long> cartItemId) {
+        return orderRepository.createOrderByUserIdAndCartIdList(userId,cartItemId);
+    }
+
+    // TODO: 결제 시스템 연동
+    public Order pay(Long userId, Long orderId) {
+        Order order = fetchOrder(orderId);
+        if (!order.getUser().getId().equals(userId)) {
+            throw new InvalidAccessException("권한이 없습니다");
+        }
+        order.getOrderItems()
+                .forEach(OrderItem::cancelPayment);
+        return order;
+    }
+
+    public Order cancelPayment(Long userId, Long orderId) {
+        Order order = fetchOrder(orderId);
+        if (!order.getUser().getId().equals(userId)) {
+            throw new InvalidAccessException("권한이 없습니다");
+        }
+        order.getOrderItems()
+                .forEach(OrderItem::cancelPayment);
+        return order;
+    }
+
+    // 배송 관련은 관리자, 판매자만 접근
+    public OrderItem registerDeliveryOne(Long orderItemId, String deliveryCode, String deliveryProvider) {
+        OrderItem orderItem = fetchOrderItem(orderItemId);
+        orderItem.registerDelivery(deliveryCode, deliveryProvider);
+        return orderItem;
+    }
+
+    public Order registerDeliveryAll(Long orderId, String deliveryCode, String deliveryProvider) {
+        Order order = fetchOrder(orderId);
+        order.getOrderItems()
+                .forEach((item) -> item.registerDelivery(deliveryCode, deliveryProvider));
+        return order;
+    }
+
+    // 자동으로 등록될 수 있도록 하면 좋을 것 같습니다
+    public OrderItem deliveryDone(Long orderItemId) {
+        OrderItem orderItem = fetchOrderItem(orderItemId);
+        orderItem.doneDelivery();
+        return orderItem;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> findAllOrder(int page, int size) {
+        return orderRepository.findAll(PageRequest.of(page, size)).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Order findOneOrder(Long orderId) {
+        return fetchOrder(orderId);
+    }
+
+    private Order fetchOrder(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 주문입니다"));
+    }
+
+    private OrderItem fetchOrderItem(Long orderItemId) {
+        return orderItemRepository.findById(orderItemId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 주문 아이템입니다"));
+    }
+}

@@ -7,6 +7,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.ApiKey;
 import springfox.documentation.service.Tag;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
@@ -46,6 +47,14 @@ public class SwaggerConfig {
 
     private Tag createTag(String name, String description) {
         return new Tag(name, description);
+    }
+
+    private ApiKey apiKey() {
+        return new ApiKey("", "", "");
+    }
+
+    private SecurityContext securityContext() {
+        return null;
     }
 
 //    // based on swagger 3.0
