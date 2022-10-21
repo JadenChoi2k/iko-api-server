@@ -22,6 +22,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
         List<CartItem> cartItemList = em.createQuery("select item from CartItem item" +
                         " where item.id in :cartIdList and item.user.id = :userId", CartItem.class)
                 .setParameter("cartIdList", cartIdList)
+                .setParameter("userId", userId)
                 .getResultList();
         if (cartItemList.isEmpty()) {
             throw new EntityNotFoundException("카트 아이템이 없습니다");
@@ -40,6 +41,7 @@ public class OrderCustomRepositoryImpl implements OrderCustomRepository {
                 .collect(Collectors.toList());
         order.setOrderItems(orderItems);
         em.persist(order);
+        cartItemList.forEach(em::remove);
         return order;
     }
 }

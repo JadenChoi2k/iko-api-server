@@ -10,6 +10,7 @@ import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -66,6 +67,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .permitAll()
                     .antMatchers("/api/v1/cart/**")
                         .authenticated()
+                    .antMatchers("/api/v1/order/**")
+                        .authenticated()
+                    .antMatchers(HttpMethod.POST,
+                            "/api/v1/order/item/**/delivery", "/api/v1/order/**/delivery",
+                            "/api/v1/order/item/**/delivery/done", "/api/v1/order/**/cancel/complete",
+                            "/api/v1/order/item/**/cancel/complete")
+                        .hasAnyRole("ROLE_SELLER", "ROLE_ADMIN")
                     .antMatchers("/api/v1/user/me/**")
                         .authenticated()
                     .anyRequest().permitAll();
