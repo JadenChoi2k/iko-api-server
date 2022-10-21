@@ -40,6 +40,9 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOptionGroup> options = new ArrayList<>();
 
+    @OneToOne(mappedBy = "product")
+    private ProductSpec spec;
+
     @Lob
     @Column(nullable = false, length = 65535)
     private String description;
@@ -60,7 +63,7 @@ public class Product extends BaseTimeEntity {
     private Integer defaultDeliveryFee;
 
     @Column(nullable = false)
-    private Integer freeDeliveryFee;
+    private Integer minimumFreeDeliveryAmount;
 
     /**
      * TODO:요약설명 내용 추가 (여기)
@@ -111,7 +114,7 @@ public class Product extends BaseTimeEntity {
         this.selling = selling;
         this.soldOut = soldOut;
         this.defaultDeliveryFee = defaultDeliveryFee;
-        this.freeDeliveryFee = freeDeliveryFee;
+        this.minimumFreeDeliveryAmount = freeDeliveryFee;
         this.searchKeyword = searchKeyword;
         this.seoTitle = seoTitle;
         this.seoDescription = seoDescription;
@@ -123,6 +126,10 @@ public class Product extends BaseTimeEntity {
         this.speedDeliveryGuide = speedDeliveryGuide;
         this.image1 = image1;
         this.image2 = image2;
+    }
+
+    public ProductSpec createSpec(String diameter, String graphicDiameter, String baseCurve, String availableDegree, String moisture, String duration, String material, String point, String frequency) {
+        return new ProductSpec(this, diameter, graphicDiameter, baseCurve, availableDegree, moisture, duration, material, point, frequency);
     }
 
     public int wholePrice(List<ProductOptionItem> selected) {

@@ -3,13 +3,10 @@ package com.iko.restapi.dto.product;
 import com.iko.restapi.domain.product.Product;
 import com.iko.restapi.domain.product.ProductOptionGroup;
 import com.iko.restapi.domain.product.ProductOptionItem;
-import io.swagger.annotations.Api;
+import com.iko.restapi.domain.product.ProductSpec;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +40,7 @@ public class ProductDto {
         @ApiModelProperty(value = "기본배송비", example = "500")
         private Integer defaultDeliveryFee;
         @ApiModelProperty(value = "무료배송가격", example = "4500")
-        private Integer freeDeliveryFee;
+        private Integer minimumFreeDeliveryAmount;
         @ApiModelProperty(value = "컬러 이름", example = "ブラウン")
         private String colorName;
         @ApiModelProperty(value = "컬러 코드", example = "#524333")
@@ -68,7 +65,7 @@ public class ProductDto {
             this.selling = selling;
             this.soldOut = soldOut;
             this.defaultDeliveryFee = defaultDeliveryFee;
-            this.freeDeliveryFee = freeDeliveryFee;
+            this.minimumFreeDeliveryAmount = freeDeliveryFee;
             this.colorName = colorName;
             this.colorCode = colorCode;
             this.image1 = image1;
@@ -87,7 +84,7 @@ public class ProductDto {
                     product.getSelling(),
                     product.getSoldOut(),
                     product.getDefaultDeliveryFee(),
-                    product.getFreeDeliveryFee(),
+                    product.getMinimumFreeDeliveryAmount(),
                     product.getColorName(),
                     product.getColorCode(),
                     product.getImage1(),
@@ -106,6 +103,7 @@ public class ProductDto {
         private String manufacturer;
 //        private String brand;
         private List<OptionGroup> options;
+        private Spec spec;
         @ApiModelProperty("상세 내용")
         private String description;
 //        private Integer consumerPrice;
@@ -131,7 +129,7 @@ public class ProductDto {
 //        private String image1;
 //        private String image2;
 
-        Detail(Long id, String name, String nameKor, String title, String manufacturer, String brand, List<OptionGroup> options, String description, Integer consumerPrice, Integer sellPrice, Boolean selling, Boolean soldOut, Integer defaultDeliveryFee, Integer freeDeliveryFee, String seoTitle, String seoDescription, String seoKeyword, String seoStandard, String generalDeliveryGuide, String speedDeliveryGuide, String colorName, String colorCode, String image1, String image2) {
+        Detail(Long id, String name, String nameKor, String title, String manufacturer, String brand, List<OptionGroup> options,Spec spec, String description, Integer consumerPrice, Integer sellPrice, Boolean selling, Boolean soldOut, Integer defaultDeliveryFee, Integer freeDeliveryFee, String seoTitle, String seoDescription, String seoKeyword, String seoStandard, String generalDeliveryGuide, String speedDeliveryGuide, String colorName, String colorCode, String image1, String image2) {
             super.id = id;
             super.name = name;
             super.nameKor = nameKor;
@@ -139,13 +137,14 @@ public class ProductDto {
             this.manufacturer = manufacturer;
             super.brand = brand;
             this.options = options;
+            this.spec = spec;
             this.description = description;
             super.consumerPrice = consumerPrice;
             super.sellPrice = sellPrice;
             super.selling = selling;
             super.soldOut = soldOut;
             super.defaultDeliveryFee = defaultDeliveryFee;
-            super.freeDeliveryFee = freeDeliveryFee;
+            super.minimumFreeDeliveryAmount = freeDeliveryFee;
             this.seoTitle = seoTitle;
             this.seoDescription = seoDescription;
             this.seoKeyword = seoKeyword;
@@ -167,13 +166,14 @@ public class ProductDto {
                     product.getManufacturer(),
                     product.getBrand(),
                     product.getOptions().stream().map(OptionGroup::of).collect(Collectors.toList()),
+                    product.getSpec() != null ? Spec.of(product.getSpec()) : null,
                     product.getDescription(),
                     product.getConsumerPrice(),
                     product.getSellPrice(),
                     product.getSelling(),
                     product.getSoldOut(),
                     product.getDefaultDeliveryFee(),
-                    product.getFreeDeliveryFee(),
+                    product.getMinimumFreeDeliveryAmount(),
                     product.getSeoTitle(),
                     product.getSeoDescription(),
                     product.getSeoKeyword(),
@@ -185,6 +185,33 @@ public class ProductDto {
                     product.getImage1(),
                     product.getImage2()
             );
+        }
+    }
+
+    @Data
+    static class Spec {
+        private String diameter;
+        private String graphicDiameter;
+        private String baseCurve;
+        private String availableDegree;
+        private String moisture;
+        private String duration;
+        private String material;
+        private String rewardPoints;
+        private String frequency;
+
+        public static Spec of(ProductSpec spec) {
+            var obj = new Spec();
+            obj.diameter = spec.getDiameter();
+            obj.graphicDiameter = spec.getGraphicDiameter();
+            obj.baseCurve = spec.getBaseCurve();
+            obj.availableDegree = spec.getAvailableDegree();
+            obj.moisture = spec.getMoisture();
+            obj.duration = spec.getDuration();
+            obj.material = spec.getMaterial();
+            obj.rewardPoints = spec.getRewardPoints();
+            obj.frequency = spec.getFrequency();
+            return obj;
         }
     }
 
