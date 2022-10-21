@@ -68,7 +68,69 @@ public class OrderController {
         );
     }
 
-    // only manager endpoint
+    @PostMapping("/item/{orderItemId}/complete")
+    public CommonResponse<OrderItemDto.Main> completeOneOrderItem(HttpServletRequest request, @PathVariable Long orderItemId) {
+        OrderItem orderItem = orderService.completeOneOrderItem(SessionUtils.getUserId(request), orderItemId);
+        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
+    }
+
+    @PostMapping("/{orderId}/complete")
+    public CommonResponse<OrderDto.Main> completeOrder(HttpServletRequest request, @PathVariable Long orderId) {
+        Order order = orderService.completeOrder(SessionUtils.getUserId(request), orderId);
+        return CommonResponse.success(OrderDto.Main.of(order));
+    }
+
+    @PostMapping("/item/{orderItemId}/refund")
+    public CommonResponse<OrderItemDto.Main> refundOneOrderItem(HttpServletRequest request, @PathVariable Long orderItemId) {
+        OrderItem orderItem = orderService.refundOrderItem(SessionUtils.getUserId(request), orderItemId);
+        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
+    }
+
+    @PostMapping("/{orderId}/refund")
+    public CommonResponse<List<OrderItemDto.Main>> refundOrderItems(
+            HttpServletRequest request, @PathVariable Long orderId, @RequestParam("itemId") List<Long> orderItemIdList) {
+        List<OrderItem> result = orderService.refundOrderItems(SessionUtils.getUserId(request), orderId, orderItemIdList);
+        return CommonResponse.success(
+                result.stream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @PostMapping("/item/{orderItemId}/exchange")
+    public CommonResponse<OrderItemDto.Main> exchangeOneOrderItem(HttpServletRequest request, @PathVariable Long orderItemId) {
+        OrderItem orderItem = orderService.exchangeOrderItem(SessionUtils.getUserId(request), orderItemId);
+        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
+    }
+
+    @PostMapping("/{orderId}/exchange")
+    public CommonResponse<List<OrderItemDto.Main>> exchangeOrderItems(
+            HttpServletRequest request, @PathVariable Long orderId, @RequestParam(name = "itemId") List<Long> orderItemIdList) {
+        List<OrderItem> result = orderService.exchangeOrderItems(SessionUtils.getUserId(request), orderId, orderItemIdList);
+        return CommonResponse.success(
+                result.stream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @PostMapping("/{orderId}/cancel/delivery")
+    public CommonResponse<List<OrderItemDto.Main>> registerCancelDelivery(HttpServletRequest request,
+                                                                          @PathVariable Long orderId,
+                                                                          @RequestParam(name = "itemId") List<Long> orderItemIdList,
+                                                                          @RequestBody OrderDto.RegisterDeliveryRequest registerRequest) {
+        List<OrderItem> result = orderService.registerCancelDelivery(
+                SessionUtils.getUserId(request), orderId, orderItemIdList,
+                registerRequest.getDeliveryCode(), registerRequest.getDeliveryProvider());
+        return CommonResponse.success(
+                result.stream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    /* manager only path */
+
     @PostMapping("/item/{orderItemId}/delivery")
     public CommonResponse<OrderItemDto.Main> registerOneDelivery(@PathVariable Long orderItemId,
                                                                  @RequestBody OrderDto.RegisterDeliveryRequest registerRequest) {
@@ -82,7 +144,6 @@ public class OrderController {
         );
     }
 
-    // only manager endpoint
     @PostMapping("/{orderId}/delivery")
     public CommonResponse<OrderDto.Main> registerAllDelivery(@PathVariable Long orderId,
                                                              @RequestBody OrderDto.RegisterDeliveryRequest registerRequest) {
@@ -102,5 +163,17 @@ public class OrderController {
         return CommonResponse.success(
                 OrderItemDto.Main.of(orderItem)
         );
+    }
+
+    @PostMapping("/{orderId}/cancel/complete")
+    public CommonResponse<OrderDto.Main> completeCancelOrder(@PathVariable Long orderId) {
+        Order order = orderService.completeAllCancel(orderId);
+        return CommonResponse.success(OrderDto.Main.of(order));
+    }
+
+    @PostMapping("/item/{orderItemId}/cancel/complete")
+    public CommonResponse<OrderItemDto.Main> completeCancelOrderItem(@PathVariable Long orderItemId) {
+        OrderItem orderItem = orderService.completeOneCancel(orderItemId);
+        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
     }
 }

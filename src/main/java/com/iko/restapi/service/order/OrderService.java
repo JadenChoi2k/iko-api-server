@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -32,10 +33,7 @@ public class OrderService {
 
     // TODO: 결제 시스템 연동
     public Order pay(Long userId, Long orderId) {
-        Order order = fetchOrder(orderId);
-        if (!order.getUser().getId().equals(userId)) {
-            throw new InvalidAccessException("권한이 없습니다");
-        }
+        Order order = fetchOrderAuthorized(userId, orderId);
         order.getOrderItems()
                 .forEach(OrderItem::pay);
         return order;
@@ -43,10 +41,7 @@ public class OrderService {
 
     // todo: 결제 시스템 연동하여 결제 취소 -> 완료
     public Order cancelPayment(Long userId, Long orderId) {
-        Order order = fetchOrder(orderId);
-        if (!order.getUser().getId().equals(userId)) {
-            throw new InvalidAccessException("권한이 없습니다");
-        }
+        Order order = fetchOrderAuthorized(userId, orderId);
         order.getOrderItems()
                 .forEach(OrderItem::cancelPayment);
         return order;
@@ -73,55 +68,56 @@ public class OrderService {
         return orderItem;
     }
 
-    public OrderItem completeOneOrderItem(Long orderItemId) {
-        OrderItem orderItem = fetchOrderItem(orderItemId);
+    public OrderItem completeOneOrderItem(Long userId, Long orderItemId) {
+        OrderItem orderItem = fetchOrderItemAuthorized(userId, orderItemId);
         orderItem.completeOrder();
         return orderItem;
     }
 
-    public Order completeOrder(Long orderId) {
-        Order order = fetchOrder(orderId);
+    public Order completeOrder(Long userId, Long orderId) {
+        Order order = fetchOrderAuthorized(userId, orderId);
         order.getOrderItems().forEach(OrderItem::completeOrder);
         return order;
     }
 
-    public OrderItem refundOrderItem(Long orderItemId) {
-        OrderItem orderItem = fetchOrderItem(orderItemId);
+    public OrderItem refundOrderItem(Long userId, Long orderItemId) {
+        OrderItem orderItem = fetchOrderItemAuthorized(userId, orderItemId);
         orderItem.refund();
         return orderItem;
     }
 
-    public List<OrderItem> refundOrderItems(Long orderId, List<Long> orderItemIdList) {
-        Order order = fetchOrder(orderId);
+    public List<OrderItem> refundOrderItems(Long userId, Long orderId, List<Long> orderItemIdList) {
+        Order order = fetchOrderAuthorized(userId, orderId);
         return order.getOrderItems().stream()
                 .filter((item) -> orderItemIdList.contains(item.getId()))
                 .peek(OrderItem::refund)
                 .collect(Collectors.toList());
     }
 
-    public OrderItem exchangeOrderItem(Long orderItemId) {
-        OrderItem orderItem = fetchOrderItem(orderItemId);
+    public OrderItem exchangeOrderItem(Long userId, Long orderItemId) {
+        OrderItem orderItem = fetchOrderItemAuthorized(userId, orderItemId);
         orderItem.exchange();
         return orderItem;
     }
 
-    public List<OrderItem> exchangeOrderItems(Long orderId, List<Long> orderItemIdList) {
-        Order order = fetchOrder(orderId);
+    public List<OrderItem> exchangeOrderItems(Long userId, Long orderId, List<Long> orderItemIdList) {
+        Order order = fetchOrderAuthorized(userId, orderId);
         return order.getOrderItems().stream()
                 .filter((item) -> orderItemIdList.contains(item.getId()))
                 .peek(OrderItem::exchange)
                 .collect(Collectors.toList());
     }
     
-    public Order registerCancelDelivery(Long orderId, List<Long> orderItemIdList, String deliveryCode, String deliveryProvider) {
-        Order order = fetchOrder(orderId);
-        order.getOrderItems().stream()
-                .filter((item) -> orderItemIdList.contains(item.getId()))
+    public List<OrderItem> registerCancelDelivery(Long userId, Long orderId, List<Long> orderItemIdList, String deliveryCode, String deliveryProvider) {
+        Order order = fetchOrderAuthorized(userId, orderId);
+        Stream<OrderItem> orderItemStream = order.getOrderItems().stream()
+                .filter((item) -> orderItemIdList.contains(item.getId()));
+        orderItemStream
                 .map(OrderItem::getOrderCancelItem)
                 .map(Optional::of)
                 .map(e -> e.orElseThrow(() -> new EntityNotFoundException("취소 요청을 찾을 수 없습니다")))
                 .forEach(can -> can.registerDelivery(deliveryCode, deliveryProvider));
-        return order;
+        return orderItemStream.collect(Collectors.toList());
     }
 
     // 관리자, 판매자만 접근
@@ -158,8 +154,24 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 주문입니다"));
     }
 
+    private Order fetchOrderAuthorized(Long userId, Long orderId) {
+        var order = fetchOrder(orderId);
+        if (!order.getUser().getId().equals(userId)) {
+            throw new InvalidAccessException("권한이 없습니다");
+        }
+        return order;
+    }
+
     private OrderItem fetchOrderItem(Long orderItemId) {
         return orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 주문 아이템입니다"));
+    }
+
+    private OrderItem fetchOrderItemAuthorized(Long userId, Long orderItemId) {
+        var orderItem = fetchOrderItem(orderItemId);
+        if (!orderItem.getOrder().getUser().getId().equals(userId)) {
+            throw new InvalidAccessException("권한이 없습니다");
+        }
+        return orderItem;
     }
 }
