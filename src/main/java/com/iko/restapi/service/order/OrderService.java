@@ -3,6 +3,7 @@ package com.iko.restapi.service.order;
 import com.iko.restapi.common.exception.EntityNotFoundException;
 import com.iko.restapi.common.exception.InvalidAccessException;
 import com.iko.restapi.domain.order.Order;
+import com.iko.restapi.domain.order.OrderCancelItem;
 import com.iko.restapi.domain.order.OrderItem;
 import com.iko.restapi.repository.order.OrderItemJpaRepository;
 import com.iko.restapi.repository.order.OrderJpaRepository;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,10 +37,11 @@ public class OrderService {
             throw new InvalidAccessException("권한이 없습니다");
         }
         order.getOrderItems()
-                .forEach(OrderItem::cancelPayment);
+                .forEach(OrderItem::pay);
         return order;
     }
 
+    // todo: 결제 시스템 연동하여 결제 취소 -> 완료
     public Order cancelPayment(Long userId, Long orderId) {
         Order order = fetchOrder(orderId);
         if (!order.getUser().getId().equals(userId)) {
@@ -66,6 +70,76 @@ public class OrderService {
     public OrderItem deliveryDone(Long orderItemId) {
         OrderItem orderItem = fetchOrderItem(orderItemId);
         orderItem.doneDelivery();
+        return orderItem;
+    }
+
+    public OrderItem completeOneOrderItem(Long orderItemId) {
+        OrderItem orderItem = fetchOrderItem(orderItemId);
+        orderItem.completeOrder();
+        return orderItem;
+    }
+
+    public Order completeOrder(Long orderId) {
+        Order order = fetchOrder(orderId);
+        order.getOrderItems().forEach(OrderItem::completeOrder);
+        return order;
+    }
+
+    public OrderItem refundOrderItem(Long orderItemId) {
+        OrderItem orderItem = fetchOrderItem(orderItemId);
+        orderItem.refund();
+        return orderItem;
+    }
+
+    public List<OrderItem> refundOrderItems(Long orderId, List<Long> orderItemIdList) {
+        Order order = fetchOrder(orderId);
+        return order.getOrderItems().stream()
+                .filter((item) -> orderItemIdList.contains(item.getId()))
+                .peek(OrderItem::refund)
+                .collect(Collectors.toList());
+    }
+
+    public OrderItem exchangeOrderItem(Long orderItemId) {
+        OrderItem orderItem = fetchOrderItem(orderItemId);
+        orderItem.exchange();
+        return orderItem;
+    }
+
+    public List<OrderItem> exchangeOrderItems(Long orderId, List<Long> orderItemIdList) {
+        Order order = fetchOrder(orderId);
+        return order.getOrderItems().stream()
+                .filter((item) -> orderItemIdList.contains(item.getId()))
+                .peek(OrderItem::exchange)
+                .collect(Collectors.toList());
+    }
+    
+    public Order registerCancelDelivery(Long orderId, List<Long> orderItemIdList, String deliveryCode, String deliveryProvider) {
+        Order order = fetchOrder(orderId);
+        order.getOrderItems().stream()
+                .filter((item) -> orderItemIdList.contains(item.getId()))
+                .map(OrderItem::getOrderCancelItem)
+                .map(Optional::of)
+                .map(e -> e.orElseThrow(() -> new EntityNotFoundException("취소 요청을 찾을 수 없습니다")))
+                .forEach(can -> can.registerDelivery(deliveryCode, deliveryProvider));
+        return order;
+    }
+
+    // 관리자, 판매자만 접근
+    public Order completeAllCancel(Long orderId) {
+        Order order = fetchOrder(orderId);
+        order.getOrderItems().stream()
+                .filter(OrderItem::isCanceled)
+                .map(OrderItem::getOrderCancelItem)
+                .forEach(OrderCancelItem::complete);
+        return order;
+    }
+    
+    public OrderItem completeOneCancel(Long orderItemId) {
+        OrderItem orderItem = fetchOrderItem(orderItemId);
+        if (!orderItem.isCanceled()) {
+            throw new InvalidAccessException("취소 내역을 찾을 수 없습니다");
+        }
+        orderItem.getOrderCancelItem().complete();
         return orderItem;
     }
 

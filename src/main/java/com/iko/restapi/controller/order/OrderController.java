@@ -30,7 +30,7 @@ public class OrderController {
     @GetMapping
     public PaginationResponse<OrderDto.Main> findAllOrder(
             @RequestParam(name = "page", defaultValue = "0") Integer page,
-            @RequestParam(name = "size", defaultValue = "20") Integer size
+            @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
         List<Order> result = orderService.findAllOrder(page, size);
         return PaginationResponse.success(

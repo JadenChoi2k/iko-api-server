@@ -77,7 +77,11 @@ public class OrderItem extends BaseTimeEntity {
         return orderItem;
     }
 
-    // 결제 완료 후에만 접근해야 함
+    public boolean isCanceled() {
+        return this.state == State.CANCEL;
+    }
+
+    // 결제 완료 후에만 접근
     public void pay() {
         if (this.state != State.PRE_ORDER) {
             throw new InvalidAccessException("결제 전이 아닙니다");
@@ -113,7 +117,7 @@ public class OrderItem extends BaseTimeEntity {
             throw new InvalidAccessException("결제 완료 상태에서만 결제를 취소할 수 있습니다");
         }
         this.state = State.CANCEL;
-        return new OrderCancelItem(this, OrderCancelItem.Type.PAYMENT);
+        return this.orderCancelItem = new OrderCancelItem(this, OrderCancelItem.Type.PAYMENT);
     }
     
     public OrderCancelItem refund() {
@@ -121,7 +125,7 @@ public class OrderItem extends BaseTimeEntity {
             throw new InvalidAccessException("배송 중이거나 배송 완료 상태에서만 환불할 수 있습니다");
         }
         this.state = State.CANCEL;
-        return new OrderCancelItem(this, OrderCancelItem.Type.REFUND);
+        return this.orderCancelItem = new OrderCancelItem(this, OrderCancelItem.Type.REFUND);
     }
 
     public OrderCancelItem exchange() {
@@ -129,6 +133,6 @@ public class OrderItem extends BaseTimeEntity {
             throw new InvalidAccessException("배송 중이거나 배송 완료 상태에서만 교환할 수 있습니다");
         }
         this.state = State.CANCEL;
-        return new OrderCancelItem(this, OrderCancelItem.Type.EXCHANGE);
+        return this.orderCancelItem = new OrderCancelItem(this, OrderCancelItem.Type.EXCHANGE);
     }
 }

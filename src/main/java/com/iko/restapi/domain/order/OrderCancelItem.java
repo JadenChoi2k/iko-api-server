@@ -1,6 +1,8 @@
 package com.iko.restapi.domain.order;
 
 import com.iko.restapi.common.entity.BaseTimeEntity;
+import com.iko.restapi.common.exception.InvalidAccessException;
+import com.iko.restapi.common.exception.InvalidParameterException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,5 +52,20 @@ public class OrderCancelItem extends BaseTimeEntity {
     public OrderCancelItem(OrderItem orderItem, Type type) {
         this.orderItem = orderItem;
         this.type = type;
+    }
+
+    public void registerDelivery(String deliveryCode, String deliveryProvider) {
+        if (this.type == Type.PAYMENT) {
+            throw new InvalidParameterException("환불, 교환의 경우에만 배송 정보를 등록할 수 있습니다");
+        }
+        this.deliveryCode = deliveryCode;
+        this.deliveryProvider = deliveryProvider;
+    }
+
+    public void complete() {
+        if (this.state == State.DONE) {
+            throw new InvalidAccessException("이미 완료된 취소 요청입니다");
+        }
+        this.state = State.DONE;
     }
 }
