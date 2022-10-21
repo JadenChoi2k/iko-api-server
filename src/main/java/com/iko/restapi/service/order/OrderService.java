@@ -23,8 +23,8 @@ public class OrderService {
     private final OrderItemJpaRepository orderItemRepository;
 
     // 카트에 있는 장바구니 아이템을 기반으로 주문 생성
-    public Order createOrder(Long userId, List<Long> cartItemId) {
-        return orderRepository.createOrderByUserIdAndCartIdList(userId,cartItemId);
+    public Order createOrder(Long userId, List<Long> cartItemIdList) {
+        return orderRepository.createOrderByUserIdAndCartIdList(userId,cartItemIdList);
     }
 
     // TODO: 결제 시스템 연동
