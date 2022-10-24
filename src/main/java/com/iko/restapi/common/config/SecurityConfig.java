@@ -1,34 +1,44 @@
 package com.iko.restapi.common.config;
 
-import com.iko.restapi.common.security.filter.LogoutSuccessHandlerImpl;
-import com.iko.restapi.common.security.auth.session.SessionAuthenticationFilter;
-import com.iko.restapi.common.security.auth.session.SessionAuthorizationFilter;
-import com.iko.restapi.repository.user.UserJpaRepository;
-import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
-import org.apache.tomcat.util.http.SameSiteCookies;
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.iko.restapi.common.security.filter.JwtAuthenticationFilter;
+import com.iko.restapi.common.security.filter.LogoutSuccessHandlerImpl;
+import com.iko.restapi.common.security.provider.JwtTokenProvider;
+import com.iko.restapi.repository.user.UserJpaRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserJpaRepository userRepository;
-
+    private final JwtTokenProvider jwtTokenProvider;
+    
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    
+ // authenticationManager를 Bean 등록합니다.
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
 
     @Bean
     public CorsConfigurationSource corsSource() {
@@ -46,10 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // jwt 이후 STATELESS로 유지
-                .and()
-                .cors()
-                .configurationSource(corsSource())
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt 이후 STATELESS로 유지
                 .and()
                 .csrf().disable()
                 .formLogin().disable()
@@ -59,8 +66,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .logoutUrl("/logout")
                     .logoutSuccessHandler(new LogoutSuccessHandlerImpl())
                 .and()
-                .addFilter(new SessionAuthenticationFilter(authenticationManager(), passwordEncoder()))
-                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userRepository))
+//                .addFilter(new SessionAuthenticationFilter(authenticationManager(), passwordEncoder()))
+//                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userRepository))
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                     .antMatchers("/api/v1/user/**")
                         .permitAll()

@@ -1,31 +1,37 @@
 package com.iko.restapi.service.user;
 
-import com.iko.restapi.common.exception.EntityNotFoundException;
-import com.iko.restapi.common.exception.ErrorCode;
-import com.iko.restapi.common.exception.InvalidParameterException;
-import com.iko.restapi.common.utils.SecurityUtils;
-import com.iko.restapi.dto.UserInfoMapping;
-import com.iko.restapi.dto.user.UserDto;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.iko.restapi.common.exception.BaseException;
-import com.iko.restapi.domain.user.User;
-import com.iko.restapi.dto.user.UserDto.JoinRequest;
-import com.iko.restapi.dto.user.UserDto.Detail;
-import com.iko.restapi.repository.user.UserJpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.iko.restapi.common.exception.BaseException;
+import com.iko.restapi.common.exception.EntityNotFoundException;
+import com.iko.restapi.common.exception.InvalidParameterException;
+import com.iko.restapi.common.security.provider.JwtTokenProvider;
+import com.iko.restapi.common.utils.SecurityUtils;
+import com.iko.restapi.domain.user.User;
+import com.iko.restapi.domain.user.User.Role;
+import com.iko.restapi.dto.user.UserDto;
+import com.iko.restapi.dto.user.UserDto.Detail;
+import com.iko.restapi.dto.user.UserDto.JoinRequest;
+import com.iko.restapi.repository.user.UserJpaRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService /*implements UserDetailsService */  {
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final UserJpaRepository userJpaRepository;
-	
 	// 이메일 조회
 	@Transactional(readOnly = true)
 	public boolean existsEmail(String email) {
@@ -95,4 +101,23 @@ public class UserService {
 				.username(userInfoById.getUsername())
 				.build();
 	}
+
+//	public String login(Map<String, String> user) {
+//		// TODO Auto-generated method stub
+//		log.info("user email = {}", user.get("email"));
+//        User member = userJpaRepository.findByLoginId(user.get("loginId"))
+//                .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 E-MAIL 입니다."));
+//        List<String> roleList = new ArrayList<String>();
+//        roleList.add(member.getRole().toString());
+//        return jwtTokenProvider.createToken(member.getUsername(), roleList);
+//	}
+//
+//	
+//	 @Override 
+//	 public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException { // TODO Auto-generated method stub return
+//		 User member = userJpaRepository.findByLoginId(userId).orElseThrow( () -> new
+//				 EntityNotFoundException("유저를 찾을 수 없습니다")); 
+//		 return member;
+//	 }
+	 
 }

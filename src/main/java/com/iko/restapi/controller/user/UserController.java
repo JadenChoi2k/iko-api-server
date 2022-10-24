@@ -1,19 +1,27 @@
 package com.iko.restapi.controller.user;
 
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.iko.restapi.common.config.SwaggerConfig;
 import com.iko.restapi.common.response.CommonResponse;
 import com.iko.restapi.dto.user.UserDto;
 import com.iko.restapi.dto.user.UserDto.Detail;
 import com.iko.restapi.dto.user.UserDto.JoinRequest;
 import com.iko.restapi.service.user.UserService;
+
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 
 @Api(tags = SwaggerConfig.USER_TAG, produces = "application/json")
 @Slf4j
@@ -78,4 +86,6 @@ public class UserController {
 	public CommonResponse<UserDto.Info> userInfo(@Parameter(description = "유저 아이디", example = "1") @PathVariable Long userId) {
 		return CommonResponse.success(userService.userInfo(userId));
 	}
+	
+	 
 }
