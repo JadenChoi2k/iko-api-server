@@ -1,17 +1,24 @@
 package com.iko.restapi.common.security.filter.Jwt;
 
 import java.io.IOException;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
 import com.iko.restapi.common.security.provider.JwtTokenProvider;
 import com.iko.restapi.repository.user.UserJpaRepository;
 
+import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 	private final AuthenticationManager authenticationManager;	
 	private final JwtTokenProvider jwtTokenProvider;
@@ -29,19 +36,34 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         // JWT 추출
 		String token = jwtTokenProvider.getJwt();
 
-        // JWT 기간 검증 후 authentication 생성 및 주입
-		// TODO: 토큰없을때, 토큰 만료됐을때, 리프레시 토큰 만료됐을때, 토큰잘못됐을때 나누기
-        if ((token != null) && jwtTokenProvider.validateToken(token)) {
-        	Authentication authentication = jwtTokenProvider.getAuthentication(token);
-        	SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
-        
-        // JWT 기간 검증 후 만료됐으면 refreshToken 요청
-        
-        // JWT 리프레시 토큰 만료되거나 토큰 없거나 이상하면 로그인페이지
-        
-        
-        
+		if(null == token) {
+			log.info("LoginFailed: token null");
+			doFilter(request, response, chain);
+			return;
+		}
+
+		Claims claim;
+		try {
+			claim = jwtTokenProvider.getClaim(token);
+		} catch (Exception e) {
+			doFilter(request, response, chain);
+			return;
+		}
+		if (!jwtTokenProvider.validateToken(claim)) {
+			doFilter(request, response, chain);
+			return;
+		}
+		
+		if("refreshToken".equals(claim.get("type").toString())) {
+			// acc 토큰 요청 (401에러)
+			// 여기로 나가면 403에러
+			doFilter(request, response, chain);
+			return;
+		}
+		
+		// 올바른 토큰+유효기간
+		Authentication authentication = jwtTokenProvider.getAuthentication(token);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
 	    doFilter(request, response, chain);
 	}
 

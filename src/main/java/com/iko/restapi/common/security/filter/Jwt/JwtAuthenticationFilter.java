@@ -1,12 +1,15 @@
 package com.iko.restapi.common.security.filter.Jwt;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,14 +54,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         var principalDetails = (PrincipalDetails) authResult.getPrincipal();
-        response.setStatus(HttpStatus.OK.value());
         log.info("log in success: {}", principalDetails.getUsername());
         // Create JWT Token
         String jwtAccToken = jwtTokenProvider.createAccToken(principalDetails.getUsername(), principalDetails.getAuthorities());
         String jwtRefreshToken = jwtTokenProvider.createRefreshToken(principalDetails.getUsername(), principalDetails.getAuthorities());
-        response.addHeader("accessToken", jwtAccToken);
-        response.addHeader("refreshToken", jwtRefreshToken);
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", jwtAccToken);
+        tokens.put("refreshToken", jwtRefreshToken);
+        response.resetBuffer();
+        response.setStatus(HttpStatus.OK.value());
+        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+        response.getOutputStream().print(new ObjectMapper().writeValueAsString(tokens));
         request.getSession().setAttribute("userId", principalDetails.getUser().getId());
+        response.flushBuffer();
     }
 
     @Override

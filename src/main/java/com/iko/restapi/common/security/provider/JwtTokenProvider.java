@@ -23,6 +23,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import lombok.RequiredArgsConstructor;
 
 //토큰을 생성하고 검증하는 클래스입니다.
@@ -50,6 +51,7 @@ public class JwtTokenProvider {
  public String createAccToken(String userPk, Collection<? extends GrantedAuthority> roles) {
      Claims claims = Jwts.claims().setSubject(userPk); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
      claims.put("roles", roles.stream().findFirst()); // 정보는 key / value 쌍으로 저장된다.
+     claims.put("type", "accessToken");
      Date now = new Date();
      return Jwts.builder()
              .setClaims(claims) // 정보 저장
@@ -63,12 +65,13 @@ public class JwtTokenProvider {
  public String createRefreshToken(String userPk, Collection<? extends GrantedAuthority> roles) {
      Claims claims = Jwts.claims().setSubject(userPk); 
      claims.put("roles", roles.stream().findFirst());
+     claims.put("type", "refreshToken");
      Date now = new Date();
      return Jwts.builder()
              .setClaims(claims) 
              .setIssuedAt(now) 
              .setExpiration(new Date(now.getTime() + refreshValidDay))
-             .signWith(SignatureAlgorithm.HS256, authKey) 
+             .signWith(SignatureAlgorithm.HS256, refreshKey) 
              .compact();
  }
  
@@ -112,12 +115,27 @@ public class JwtTokenProvider {
  public String getUserPk(String token) {
      return Jwts.parser().setSigningKey(authKey).parseClaimsJws(token).getBody().getSubject();
  }
+ 
+ // accessToken or refreshToken Claims 가져오기
+ public Claims getClaim(String token) {
+	 try {
+		 return Jwts.parser().setSigningKey(authKey).parseClaimsJws(token).getBody();
+	 } catch (SignatureException signatureException) {
+		 try {
+			 return Jwts.parser().setSigningKey(refreshKey).parseClaimsJws(token).getBody();
+		 } catch (Exception exception) {
+			 throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
+		 }
+	 } catch (Exception e) {
+		 throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
+		 
+	 }
+ }
 
  // 토큰의 유효성 + 만료일자 확인
- public boolean validateToken(String jwtToken) {
+ public boolean validateToken(Claims claim) {
      try {
-         Jws<Claims> claims = Jwts.parser().setSigningKey(authKey).parseClaimsJws(jwtToken);
-         return !claims.getBody().getExpiration().before(new Date());
+         return !claim.getExpiration().before(new Date());
      } catch (Exception e) {
          return false;
      }
