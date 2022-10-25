@@ -49,7 +49,7 @@ public class OrderService {
 
     // 배송 관련은 관리자, 판매자만 접근
     public List<OrderItem> registerDeliveryOne(List<Long> orderItemIds, String deliveryCode, String deliveryProvider) {
-        return orderItemIds.parallelStream()
+        return orderItemIds.stream()
                 .map(this::fetchOrderItem)
                 .peek((item) -> item.registerDelivery(deliveryCode, deliveryProvider))
                 .collect(Collectors.toList());
@@ -70,7 +70,7 @@ public class OrderService {
     }
 
     public List<OrderItem> deliveryDone(List<Long> itemIds) {
-        return itemIds.parallelStream()
+        return itemIds.stream()
                 .map(this::deliveryDoneOne)
                 .collect(Collectors.toList());
     }
@@ -150,7 +150,7 @@ public class OrderService {
     }
 
     public List<OrderItem> completeCancel(List<Long> itemIds) {
-        return itemIds.parallelStream()
+        return itemIds.stream()
                 .map(this::completeCancelOne)
                 .collect(Collectors.toList());
     }

@@ -180,7 +180,7 @@ public class OrderController {
     public CommonResponse<List<OrderItemDto.Main>> deliveryDone(@RequestParam(name = "itemId") List<Long> itemIds) {
         List<OrderItem> orderItems = orderService.deliveryDone(itemIds);
         return CommonResponse.success(
-                orderItems.parallelStream()
+                orderItems.stream()
                         .map(OrderItemDto.Main::of)
                         .collect(Collectors.toList())
         );
@@ -196,7 +196,7 @@ public class OrderController {
     public CommonResponse<List<OrderItemDto.Main>> completeCancelOrderItem(@RequestParam(name = "itemId") List<Long> itemIds) {
         List<OrderItem> orderItems = orderService.completeCancel(itemIds);
         return CommonResponse.success(
-                orderItems.parallelStream()
+                orderItems.stream()
                         .map(OrderItemDto.Main::of)
                         .collect(Collectors.toList())
         );
