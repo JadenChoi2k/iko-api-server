@@ -56,9 +56,9 @@ public class OrderItem extends BaseTimeEntity {
     @Getter
     @RequiredArgsConstructor
     public enum State {
-        PRE_ORDER("주문 전"), PAYED("결제 완료"), IN_DELIVERY("배송 중"), CANCEL("취소"),
+        PRE_ORDER("주문 전"), PAYED("결제 완료"), READY_PRODUCT("상품 준비 중"),
+        READY_DELIVERY("배송 준비 중"), IN_DELIVERY("배송 중"), CANCEL("취소"),
         DELIVERY_DONE("배송 완료"), COMPLETE("주문 확정"), ERROR("오류 발생");
-
         private final String description;
     }
 
@@ -80,7 +80,21 @@ public class OrderItem extends BaseTimeEntity {
     public boolean isCanceled() {
         return this.state == State.CANCEL;
     }
-
+    
+    public void readyProduct() {
+        if (this.state != State.PAYED) {
+            throw new InvalidAccessException("결제 완료 후에만 접근할 수 있습니다");
+        }
+        this.state = State.READY_PRODUCT;
+    }
+    
+    public void readyDelivery() {
+        if (this.state != State.IN_DELIVERY) {
+            throw new InvalidAccessException("상품 준비 중에만 접근할 수 있습니다");
+        }
+        this.state = State.READY_DELIVERY;
+    }
+    
     // 결제 완료 후에만 접근
     public void pay() {
         if (this.state != State.PRE_ORDER) {
@@ -90,8 +104,8 @@ public class OrderItem extends BaseTimeEntity {
     }
 
     public void registerDelivery(String deliveryCode, String deliveryProvider) {
-        if (this.state != State.PAYED) {
-            throw new InvalidAccessException("결제 완료 상태에서만 배송 정보를 등록할 수 있습니다");
+        if (this.state != State.READY_DELIVERY) {
+            throw new InvalidAccessException("배송 준비 상태에서만 배송 정보를 등록할 수 있습니다");
         }
         this.deliveryCode = deliveryCode;
         this.deliveryProvider = deliveryProvider;
@@ -110,6 +124,14 @@ public class OrderItem extends BaseTimeEntity {
             throw new InvalidAccessException("배송 완료 상태에서만 주문확정할 수 있습니다");
         }
         this.state = State.COMPLETE;
+    }
+
+    public OrderCancelItem cancelPreOrder() {
+        if (this.state != State.PRE_ORDER) {
+            throw new InvalidAccessException("결제 전 상태에서면 주문 취소를 할 수 있습니다");
+        }
+        this.state = State.CANCEL;
+        return this.orderCancelItem = new OrderCancelItem(this, OrderCancelItem.Type.PRE_ORDER);
     }
 
     public OrderCancelItem cancelPayment() {

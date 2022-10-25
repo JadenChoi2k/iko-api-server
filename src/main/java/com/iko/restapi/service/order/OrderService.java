@@ -47,6 +47,22 @@ public class OrderService {
         return order;
     }
 
+    // 관리자, 판매자만 접근
+    public Order readyOrderProduct(Long orderId) {
+        Order order = fetchOrder(orderId);
+        order.getOrderItems()
+                .forEach(OrderItem::readyProduct);
+        return order;
+    }
+
+    // 관리자, 판매자만 접근
+    public Order readyOrderDelivery(Long orderId) {
+        Order order = fetchOrder(orderId);
+        order.getOrderItems()
+                .forEach(OrderItem::readyDelivery);
+        return order;
+    }
+
     // 배송 관련은 관리자, 판매자만 접근
     public List<OrderItem> registerDeliveryOne(List<Long> orderItemIds, String deliveryCode, String deliveryProvider) {
         return orderItemIds.stream()
@@ -73,6 +89,12 @@ public class OrderService {
         return itemIds.stream()
                 .map(this::deliveryDoneOne)
                 .collect(Collectors.toList());
+    }
+
+    public Order deliveryDone(Long orderId) {
+        Order order = fetchOrder(orderId);
+        order.getOrderItems().forEach(OrderItem::doneDelivery);
+        return order;
     }
 
     public List<OrderItem> completeOrderItems(Long userId, List<Long> orderItemIdList) {

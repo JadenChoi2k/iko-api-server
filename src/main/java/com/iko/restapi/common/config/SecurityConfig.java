@@ -20,6 +20,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -68,13 +72,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .authenticated()
                     .antMatchers("/api/v1/order/**")
                         .authenticated()
-                    .antMatchers(HttpMethod.POST,
-                            "/api/v1/order/item/**/delivery", "/api/v1/order/**/delivery",
-                            "/api/v1/order/item/**/delivery/done", "/api/v1/order/**/cancel/complete",
-                            "/api/v1/order/item/**/cancel/complete")
+                    .antMatchers(HttpMethod.POST, sellerAndAdminPostPath())
                         .hasAnyRole("ROLE_SELLER", "ROLE_ADMIN")
                     .antMatchers("/api/v1/user/me/**")
                         .authenticated()
                     .anyRequest().permitAll();
+    }
+
+    private String[] sellerAndAdminPostPath() {
+        List<String> ret = new ArrayList<>();
+
+        // order
+        String orderPath = "/api/v1/order";
+        ret.add(orderPath + "/**/ready/**");
+        ret.add(orderPath + "/**/delivery");
+        ret.add(orderPath + "/**/delivery/done");
+        ret.add(orderPath + "/**/cancel/complete");
+
+        return ret.toArray(new String[0]);
     }
 }

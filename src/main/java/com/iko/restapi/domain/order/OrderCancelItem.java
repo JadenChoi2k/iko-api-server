@@ -44,7 +44,7 @@ public class OrderCancelItem extends BaseTimeEntity {
     @Getter
     @RequiredArgsConstructor
     public enum Type {
-        PAYMENT("결제 취소"), REFUND("환불"), EXCHANGE("교환");
+        PRE_ORDER("결제 전"), PAYMENT("결제 취소"), REFUND("환불"), EXCHANGE("교환");
 
         private final String description;
     }

@@ -148,6 +148,18 @@ public class OrderController {
 
     /* manager only path */
 
+    @PostMapping("/{orderId}/ready/product")
+    public CommonResponse<OrderDto.Main> readyOrderProduct(@PathVariable Long orderId) {
+        Order order = orderService.readyOrderProduct(orderId);
+        return CommonResponse.success(OrderDto.Main.of(order));
+    }
+
+    @PostMapping("/{orderId}/ready/delivery")
+    public CommonResponse<OrderDto.Main> readyOrderDelivery(@PathVariable Long orderId) {
+        Order order = orderService.readyOrderDelivery(orderId);
+        return CommonResponse.success(OrderDto.Main.of(order));
+    }
+
     @PostMapping("/items/delivery")
     public CommonResponse<List<OrderItemDto.Main>> registerOneDelivery(
             @RequestParam(name = "itemId") List<Long> itemIds, @RequestBody OrderDto.RegisterDeliveryRequest registerRequest) {
@@ -174,6 +186,12 @@ public class OrderController {
         return CommonResponse.success(
                 OrderDto.Main.of(registeredOrder)
         );
+    }
+
+    @PostMapping("/{orderId}/delivery/done")
+    public CommonResponse<OrderDto.Main> orderDeliveryDone(@PathVariable Long orderId) {
+        Order order = orderService.deliveryDone(orderId);
+        return CommonResponse.success(OrderDto.Main.of(order));
     }
 
     @PostMapping("/items/delivery/done")
