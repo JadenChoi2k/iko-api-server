@@ -69,10 +69,15 @@ public class OrderController {
         );
     }
 
-    @PostMapping("/item/{orderItemId}/complete")
-    public CommonResponse<OrderItemDto.Main> completeOneOrderItem(HttpServletRequest request, @PathVariable Long orderItemId) {
-        OrderItem orderItem = orderService.completeOneOrderItem(SessionUtils.getUserId(request), orderItemId);
-        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
+    @PostMapping("/items/complete")
+    public CommonResponse<List<OrderItemDto.Main>> completeOneOrderItem(
+            HttpServletRequest request, @RequestParam(name = "itemId") List<Long> itemIds) {
+        List<OrderItem> orderItems = orderService.completeOrderItems(SessionUtils.getUserId(request), itemIds);
+        return CommonResponse.success(
+                orderItems.stream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
+        );
     }
 
     @PostMapping("/{orderId}/complete")
@@ -81,15 +86,20 @@ public class OrderController {
         return CommonResponse.success(OrderDto.Main.of(order));
     }
 
-    @PostMapping("/item/{orderItemId}/refund")
-    public CommonResponse<OrderItemDto.Main> refundOneOrderItem(HttpServletRequest request, @PathVariable Long orderItemId) {
-        OrderItem orderItem = orderService.refundOrderItem(SessionUtils.getUserId(request), orderItemId);
-        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
+    @PostMapping("/items/refund")
+    public CommonResponse<List<OrderItemDto.Main>> refundOneOrderItem(
+            HttpServletRequest request, @RequestParam(name = "itemIds") List<Long> itemIds) {
+        List<OrderItem> refundOrderItems = orderService.refundOrderItems(SessionUtils.getUserId(request), itemIds);
+        return CommonResponse.success(
+                refundOrderItems.stream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
+        );
     }
 
     @PostMapping("/{orderId}/refund")
     public CommonResponse<List<OrderItemDto.Main>> refundOrderItems(
-            HttpServletRequest request, @PathVariable Long orderId, @RequestParam("itemId") List<Long> orderItemIdList) {
+            HttpServletRequest request, @PathVariable Long orderId, @RequestParam("itemIds") List<Long> orderItemIdList) {
         List<OrderItem> result = orderService.refundOrderItems(SessionUtils.getUserId(request), orderId, orderItemIdList);
         return CommonResponse.success(
                 result.stream()
@@ -98,15 +108,21 @@ public class OrderController {
         );
     }
 
-    @PostMapping("/item/{orderItemId}/exchange")
-    public CommonResponse<OrderItemDto.Main> exchangeOneOrderItem(HttpServletRequest request, @PathVariable Long orderItemId) {
-        OrderItem orderItem = orderService.exchangeOrderItem(SessionUtils.getUserId(request), orderItemId);
-        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
+    @PostMapping("/items/exchange")
+    public CommonResponse<List<OrderItemDto.Main>> exchangeOneOrderItem(
+            HttpServletRequest request, @RequestParam(name = "itemId") List<Long> itemIds) {
+
+        List<OrderItem> orderItems = orderService.exchangeOrderItems(SessionUtils.getUserId(request), itemIds);
+        return CommonResponse.success(
+                orderItems.stream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
+        );
     }
 
     @PostMapping("/{orderId}/exchange")
     public CommonResponse<List<OrderItemDto.Main>> exchangeOrderItems(
-            HttpServletRequest request, @PathVariable Long orderId, @RequestParam(name = "itemId") List<Long> orderItemIdList) {
+            HttpServletRequest request, @PathVariable Long orderId, @RequestParam(name = "itemIds") List<Long> orderItemIdList) {
         List<OrderItem> result = orderService.exchangeOrderItems(SessionUtils.getUserId(request), orderId, orderItemIdList);
         return CommonResponse.success(
                 result.stream()
@@ -132,16 +148,18 @@ public class OrderController {
 
     /* manager only path */
 
-    @PostMapping("/item/{orderItemId}/delivery")
-    public CommonResponse<OrderItemDto.Main> registerOneDelivery(@PathVariable Long orderItemId,
-                                                                 @RequestBody OrderDto.RegisterDeliveryRequest registerRequest) {
-        OrderItem orderItem = orderService.registerDeliveryOne(
-                orderItemId,
+    @PostMapping("/items/delivery")
+    public CommonResponse<List<OrderItemDto.Main>> registerOneDelivery(
+            @RequestParam(name = "itemId") List<Long> itemIds, @RequestBody OrderDto.RegisterDeliveryRequest registerRequest) {
+        List<OrderItem> orderItems = orderService.registerDeliveryOne(
+                itemIds,
                 registerRequest.getDeliveryCode(),
                 registerRequest.getDeliveryProvider()
         );
         return CommonResponse.success(
-                OrderItemDto.Main.of(orderItem)
+                orderItems.stream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
         );
     }
 
@@ -158,11 +176,13 @@ public class OrderController {
         );
     }
 
-    @PostMapping("/item/{orderItemId}/delivery/done")
-    public CommonResponse<OrderItemDto.Main> deliveryDone(@PathVariable Long orderItemId) {
-        OrderItem orderItem = orderService.deliveryDone(orderItemId);
+    @PostMapping("/items/delivery/done")
+    public CommonResponse<List<OrderItemDto.Main>> deliveryDone(@RequestParam(name = "itemId") List<Long> itemIds) {
+        List<OrderItem> orderItems = orderService.deliveryDone(itemIds);
         return CommonResponse.success(
-                OrderItemDto.Main.of(orderItem)
+                orderItems.parallelStream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
         );
     }
 
@@ -172,9 +192,13 @@ public class OrderController {
         return CommonResponse.success(OrderDto.Main.of(order));
     }
 
-    @PostMapping("/item/{orderItemId}/cancel/complete")
-    public CommonResponse<OrderItemDto.Main> completeCancelOrderItem(@PathVariable Long orderItemId) {
-        OrderItem orderItem = orderService.completeOneCancel(orderItemId);
-        return CommonResponse.success(OrderItemDto.Main.of(orderItem));
+    @PostMapping("/items/cancel/complete")
+    public CommonResponse<List<OrderItemDto.Main>> completeCancelOrderItem(@RequestParam(name = "itemId") List<Long> itemIds) {
+        List<OrderItem> orderItems = orderService.completeCancel(itemIds);
+        return CommonResponse.success(
+                orderItems.parallelStream()
+                        .map(OrderItemDto.Main::of)
+                        .collect(Collectors.toList())
+        );
     }
 }

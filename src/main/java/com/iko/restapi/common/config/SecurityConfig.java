@@ -55,7 +55,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
-                // .logout() 구현하기
                 .logout()
                     .logoutUrl("/logout")
                     .logoutSuccessHandler(new LogoutSuccessHandlerImpl())

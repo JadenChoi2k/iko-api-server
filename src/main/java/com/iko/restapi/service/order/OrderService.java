@@ -48,10 +48,11 @@ public class OrderService {
     }
 
     // 배송 관련은 관리자, 판매자만 접근
-    public OrderItem registerDeliveryOne(Long orderItemId, String deliveryCode, String deliveryProvider) {
-        OrderItem orderItem = fetchOrderItem(orderItemId);
-        orderItem.registerDelivery(deliveryCode, deliveryProvider);
-        return orderItem;
+    public List<OrderItem> registerDeliveryOne(List<Long> orderItemIds, String deliveryCode, String deliveryProvider) {
+        return orderItemIds.parallelStream()
+                .map(this::fetchOrderItem)
+                .peek((item) -> item.registerDelivery(deliveryCode, deliveryProvider))
+                .collect(Collectors.toList());
     }
 
     public Order registerDeliveryAll(Long orderId, String deliveryCode, String deliveryProvider) {
@@ -62,16 +63,23 @@ public class OrderService {
     }
 
     // 자동으로 등록될 수 있도록 하면 좋을 것 같습니다
-    public OrderItem deliveryDone(Long orderItemId) {
+    private OrderItem deliveryDoneOne(Long orderItemId) {
         OrderItem orderItem = fetchOrderItem(orderItemId);
         orderItem.doneDelivery();
         return orderItem;
     }
 
-    public OrderItem completeOneOrderItem(Long userId, Long orderItemId) {
-        OrderItem orderItem = fetchOrderItemAuthorized(userId, orderItemId);
-        orderItem.completeOrder();
-        return orderItem;
+    public List<OrderItem> deliveryDone(List<Long> itemIds) {
+        return itemIds.parallelStream()
+                .map(this::deliveryDoneOne)
+                .collect(Collectors.toList());
+    }
+
+    public List<OrderItem> completeOrderItems(Long userId, List<Long> orderItemIdList) {
+        return orderItemIdList.stream()
+                .map((id) -> fetchOrderItemAuthorized(userId, id))
+                .peek(OrderItem::completeOrder)
+                .collect(Collectors.toList());
     }
 
     public Order completeOrder(Long userId, Long orderId) {
@@ -80,10 +88,11 @@ public class OrderService {
         return order;
     }
 
-    public OrderItem refundOrderItem(Long userId, Long orderItemId) {
-        OrderItem orderItem = fetchOrderItemAuthorized(userId, orderItemId);
-        orderItem.refund();
-        return orderItem;
+    public List<OrderItem> refundOrderItems(Long userId, List<Long> orderItemIds) {
+        return orderItemIds.stream()
+                .map((id) -> fetchOrderItemAuthorized(userId, id))
+                .peek(OrderItem::refund)
+                .collect(Collectors.toList());
     }
 
     public List<OrderItem> refundOrderItems(Long userId, Long orderId, List<Long> orderItemIdList) {
@@ -94,10 +103,11 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public OrderItem exchangeOrderItem(Long userId, Long orderItemId) {
-        OrderItem orderItem = fetchOrderItemAuthorized(userId, orderItemId);
-        orderItem.exchange();
-        return orderItem;
+    public List<OrderItem> exchangeOrderItems(Long userId, List<Long> orderItemId) {
+        return orderItemId.stream()
+                .map((id) -> fetchOrderItemAuthorized(userId, id))
+                .peek(OrderItem::exchange)
+                .collect(Collectors.toList());
     }
 
     public List<OrderItem> exchangeOrderItems(Long userId, Long orderId, List<Long> orderItemIdList) {
@@ -130,13 +140,19 @@ public class OrderService {
         return order;
     }
     
-    public OrderItem completeOneCancel(Long orderItemId) {
+    private OrderItem completeCancelOne(Long orderItemId) {
         OrderItem orderItem = fetchOrderItem(orderItemId);
         if (!orderItem.isCanceled()) {
             throw new InvalidAccessException("취소 내역을 찾을 수 없습니다");
         }
         orderItem.getOrderCancelItem().complete();
         return orderItem;
+    }
+
+    public List<OrderItem> completeCancel(List<Long> itemIds) {
+        return itemIds.parallelStream()
+                .map(this::completeCancelOne)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
