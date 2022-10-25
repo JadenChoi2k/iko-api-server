@@ -9,12 +9,14 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.iko.restapi.common.security.filter.JwtAuthenticationFilter;
 import com.iko.restapi.common.security.filter.LogoutSuccessHandlerImpl;
+import com.iko.restapi.common.security.filter.Jwt.JwtAuthenticationFilter;
+import com.iko.restapi.common.security.filter.Jwt.JwtAuthorizationFilter;
 import com.iko.restapi.common.security.provider.JwtTokenProvider;
 import com.iko.restapi.repository.user.UserJpaRepository;
 
@@ -68,10 +70,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
 //                .addFilter(new SessionAuthenticationFilter(authenticationManager(), passwordEncoder()))
 //                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userRepository))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(authenticationManager(), jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthorizationFilter(authenticationManager(), userRepository, jwtTokenProvider), BasicAuthenticationFilter.class)
                 .authorizeRequests()
-                    .antMatchers("/api/v1/user/**")
-                        .permitAll()
+                	.antMatchers("/api/v1/login")
+                		.permitAll()
                     .antMatchers("/api/v1/cart/**")
                         .authenticated()
                     .antMatchers("/api/v1/user/me/**")
