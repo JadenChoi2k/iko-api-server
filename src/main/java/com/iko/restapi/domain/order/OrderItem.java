@@ -90,7 +90,7 @@ public class OrderItem extends BaseTimeEntity {
     }
     
     public void readyDelivery() {
-        if (this.state != State.IN_DELIVERY) {
+        if (this.state != State.READY_PRODUCT) {
             throw new InvalidAccessException("상품 준비 중에만 접근할 수 있습니다");
         }
         this.state = State.READY_DELIVERY;

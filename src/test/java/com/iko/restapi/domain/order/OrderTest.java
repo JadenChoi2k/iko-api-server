@@ -25,6 +25,7 @@ public class OrderTest {
                 )
         );
         order.setOrderItems(List.of(orderItem));
+        order.fillDeliveryInfo("홍길동", "중앙로 12번길 302호", "123456");
         return order;
     }
 
@@ -109,6 +110,8 @@ public class OrderTest {
         OrderItem orderItem = getOrderItem();
         orderItem.pay();
         // when
+        orderItem.readyProduct();
+        orderItem.readyDelivery();
         orderItem.registerDelivery("123456", "한진");
         // then
         assertThat(orderItem.getState()).isEqualTo(OrderItem.State.IN_DELIVERY);
@@ -128,6 +131,8 @@ public class OrderTest {
         // given
         OrderItem orderItem = getOrderItem();
         orderItem.pay();
+        orderItem.readyProduct();
+        orderItem.readyDelivery();
         orderItem.registerDelivery("123456", "한진");
         // when
         orderItem.doneDelivery();
@@ -150,6 +155,8 @@ public class OrderTest {
         // given
         OrderItem orderItem = getOrderItem();
         orderItem.pay();
+        orderItem.readyProduct();
+        orderItem.readyDelivery();
         orderItem.registerDelivery("123456", "한진");
         orderItem.doneDelivery();
         // when
@@ -163,6 +170,8 @@ public class OrderTest {
         // given
         OrderItem orderItem = getOrderItem();
         orderItem.pay();
+        orderItem.readyProduct();
+        orderItem.readyDelivery();
         orderItem.registerDelivery("123456", "한진");
         // when
         OrderCancelItem orderCancelItem = orderItem.refund();
@@ -178,6 +187,8 @@ public class OrderTest {
         // given
         OrderItem orderItem = getOrderItem();
         orderItem.pay();
+        orderItem.readyProduct();
+        orderItem.readyDelivery();
         orderItem.registerDelivery("123456", "한진");
         // when
         OrderCancelItem orderCancelItem = orderItem.refund();
@@ -191,6 +202,8 @@ public class OrderTest {
         // given
         OrderItem orderItem = getOrderItem();
         orderItem.pay();
+        orderItem.readyProduct();
+        orderItem.readyDelivery();
         orderItem.registerDelivery("123456", "한진");
         // when
         OrderCancelItem orderCancelItem = orderItem.exchange();
@@ -206,6 +219,8 @@ public class OrderTest {
         // given
         OrderItem orderItem = getOrderItem();
         orderItem.pay();
+        orderItem.readyProduct();
+        orderItem.readyDelivery();
         orderItem.registerDelivery("123456", "한진");
         // when
         OrderCancelItem orderCancelItem = orderItem.exchange();
