@@ -10,6 +10,7 @@ import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -18,6 +19,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -54,7 +59,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
-                // .logout() 구현하기
                 .logout()
                     .logoutUrl("/logout")
                     .logoutSuccessHandler(new LogoutSuccessHandlerImpl())
@@ -66,8 +70,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .permitAll()
                     .antMatchers("/api/v1/cart/**")
                         .authenticated()
+                    .antMatchers("/api/v1/order/**")
+                        .authenticated()
+                    .antMatchers(HttpMethod.POST, sellerAndAdminPostPath())
+                        .hasAnyRole("ROLE_SELLER", "ROLE_ADMIN")
                     .antMatchers("/api/v1/user/me/**")
                         .authenticated()
                     .anyRequest().permitAll();
+    }
+
+    private String[] sellerAndAdminPostPath() {
+        List<String> ret = new ArrayList<>();
+
+        // order
+        String orderPath = "/api/v1/order";
+        ret.add(orderPath + "/**/ready/**");
+        ret.add(orderPath + "/**/delivery");
+        ret.add(orderPath + "/**/delivery/done");
+        ret.add(orderPath + "/**/cancel/complete");
+
+        return ret.toArray(new String[0]);
     }
 }
