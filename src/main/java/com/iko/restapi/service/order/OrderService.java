@@ -32,11 +32,14 @@ public class OrderService {
 
     // 카트에 있는 장바구니 아이템을 기반으로 주문 생성
     public Order createOrder(List<Long> cartItemIdList) {
-        return orderRepository.createOrderByUserAndCartIdList(currentUser(), cartItemIdList);
+        User user = currentUser();
+        log.info("create order (userId={}, itemIds={})", user.getId(), cartItemIdList.stream().map(Object::toString).collect(Collectors.joining(",")));
+        return orderRepository.createOrderByUserAndCartIdList(user, cartItemIdList);
     }
 
     public Order fillDeliveryInfo(Long orderId, String recipient, String address, String zipCode) {
         Order order = fetchOrderAuthorized(orderId);
+        log.info("order(id={}) fill delivery info", orderId);
         order.fillDeliveryInfo(recipient, address, zipCode);
         return order;
     }
@@ -44,6 +47,7 @@ public class OrderService {
     // TODO: 결제 시스템 연동
     public Order pay(Long orderId) {
         Order order = fetchOrderAuthorized(orderId);
+        log.info("pay order(id={})", orderId);
         order.getOrderItems()
                 .forEach(OrderItem::pay);
         return order;
@@ -52,6 +56,7 @@ public class OrderService {
     // todo: 결제 시스템 연동하여 결제 취소 -> 완료
     public Order cancelPayment(Long orderId) {
         Order order = fetchOrderAuthorized(orderId);
+        log.info("cancel payment (orderId={})", orderId);
         order.getOrderItems()
                 .forEach(OrderItem::cancelPayment);
         return order;
@@ -61,6 +66,7 @@ public class OrderService {
     public Order readyOrderProduct(Long orderId) {
         validateSellerOrAdmin();
         Order order = fetchOrder(orderId);
+        log.info("ready product (orderId={})", orderId);
         order.getOrderItems()
                 .forEach(OrderItem::readyProduct);
         return order;
@@ -70,50 +76,56 @@ public class OrderService {
     public Order readyOrderDelivery(Long orderId) {
         validateSellerOrAdmin();
         Order order = fetchOrder(orderId);
+        log.info("ready delivery (orderId={})", orderId);
         order.getOrderItems()
                 .forEach(OrderItem::readyDelivery);
         return order;
     }
 
     // 배송 관련은 관리자, 판매자만 접근
-    public List<OrderItem> registerDeliveryOne(List<Long> orderItemIds, String deliveryCode, String deliveryProvider) {
-        validateSellerOrAdmin();
-        return orderItemIds.stream()
-                .map(this::fetchOrderItem)
-                .peek((item) -> item.registerDelivery(deliveryCode, deliveryProvider))
-                .collect(Collectors.toList());
-    }
+//    public List<OrderItem> registerDeliveryOne(List<Long> orderItemIds, String deliveryCode, String deliveryProvider) {
+//        validateSellerOrAdmin();
+//        log.info("register delivery");
+//        return orderItemIds.stream()
+//                .map(this::fetchOrderItem)
+//                .peek((item) -> item.registerDelivery(deliveryCode, deliveryProvider))
+//                .collect(Collectors.toList());
+//    }
 
     public Order registerDeliveryAll(Long orderId, String deliveryCode, String deliveryProvider) {
         validateSellerOrAdmin();
         Order order = fetchOrder(orderId);
+        log.info("register delivery (orderId={})", orderId);
         order.getOrderItems()
                 .forEach((item) -> item.registerDelivery(deliveryCode, deliveryProvider));
         return order;
     }
 
     // 자동으로 등록될 수 있도록 하면 좋을 것 같습니다
-    private OrderItem deliveryDoneOne(Long orderItemId) {
-        validateSellerOrAdmin();
-        OrderItem orderItem = fetchOrderItem(orderItemId);
-        orderItem.doneDelivery();
-        return orderItem;
-    }
-
-    public List<OrderItem> deliveryDone(List<Long> itemIds) {
-        validateSellerOrAdmin();
-        return itemIds.stream()
-                .map(this::deliveryDoneOne)
-                .collect(Collectors.toList());
-    }
+//    private OrderItem deliveryDoneOne(Long orderItemId) {
+//        validateSellerOrAdmin();
+//        OrderItem orderItem = fetchOrderItem(orderItemId);
+//        orderItem.doneDelivery();
+//        return orderItem;
+//    }
+//
+//    public List<OrderItem> deliveryDone(List<Long> itemIds) {
+//        validateSellerOrAdmin();
+//        return itemIds.stream()
+//                .map(this::deliveryDoneOne)
+//                .collect(Collectors.toList());
+//    }
 
     public Order deliveryDone(Long orderId) {
         Order order = fetchOrder(orderId);
+        log.info("delivery done (orderId={})", orderId);
         order.getOrderItems().forEach(OrderItem::doneDelivery);
         return order;
     }
 
     public List<OrderItem> completeOrderItems(List<Long> orderItemIdList) {
+        log.info("order items complete (orderItemIdList=[{}])",
+                orderItemIdList.stream().map(Object::toString).collect(Collectors.joining(",")));
         return orderItemIdList.stream()
                 .map(this::fetchOrderItemAuthorized)
                 .peek(OrderItem::completeOrder)
@@ -122,11 +134,14 @@ public class OrderService {
 
     public Order completeOrder(Long orderId) {
         Order order = fetchOrderAuthorized(orderId);
+        log.info("complete order(orderId={})", orderId);
         order.getOrderItems().forEach(OrderItem::completeOrder);
         return order;
     }
 
     public List<OrderItem> refundOrderItems(List<Long> orderItemIds) {
+        log.info("order items refund (orderItemIdList=[{}])",
+                orderItemIds.stream().map(Object::toString).collect(Collectors.joining(",")));
         return orderItemIds.stream()
                 .map(this::fetchOrderItemAuthorized)
                 .peek(OrderItem::refund)
@@ -134,6 +149,8 @@ public class OrderService {
     }
 
     public List<OrderItem> refundOrderItems(Long orderId, List<Long> orderItemIdList) {
+        log.info("order items refund (orderId={})(orderItemIdList=[{}])",
+                orderId, orderItemIdList.stream().map(Object::toString).collect(Collectors.joining(",")));
         Order order = fetchOrderAuthorized(orderId);
         return order.getOrderItems().stream()
                 .filter((item) -> orderItemIdList.contains(item.getId()))
@@ -141,14 +158,18 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public List<OrderItem> exchangeOrderItems(List<Long> orderItemId) {
-        return orderItemId.stream()
+    public List<OrderItem> exchangeOrderItems(List<Long> orderItemIdList) {
+        log.info("order items exchange (orderItemIdList=[{}])",
+                orderItemIdList.stream().map(Object::toString).collect(Collectors.joining(",")));
+        return orderItemIdList.stream()
                 .map(this::fetchOrderItemAuthorized)
                 .peek(OrderItem::exchange)
                 .collect(Collectors.toList());
     }
 
     public List<OrderItem> exchangeOrderItems(Long orderId, List<Long> orderItemIdList) {
+        log.info("order items exchange (orderId={})(orderItemIdList=[{}])",
+                orderId, orderItemIdList.stream().map(Object::toString).collect(Collectors.joining(",")));
         Order order = fetchOrderAuthorized(orderId);
         return order.getOrderItems().stream()
                 .filter((item) -> orderItemIdList.contains(item.getId()))
@@ -157,6 +178,8 @@ public class OrderService {
     }
     
     public List<OrderItem> registerCancelDelivery(Long orderId, List<Long> orderItemIdList, String deliveryCode, String deliveryProvider) {
+        log.info("register cancel delivery (orderId={})(orderItemIdList=[{}])",
+                orderId, orderItemIdList.stream().map(Object::toString).collect(Collectors.joining(",")));
         Order order = fetchOrderAuthorized(orderId);
         Stream<OrderItem> orderItemStream = order.getOrderItems().stream()
                 .filter((item) -> orderItemIdList.contains(item.getId()));
@@ -171,6 +194,7 @@ public class OrderService {
     // 관리자, 판매자만 접근
     public Order completeAllCancel(Long orderId) {
         Order order = fetchOrder(orderId);
+        log.info("complete all canceled (orderId={})", orderId);
         order.getOrderItems().stream()
                 .filter(OrderItem::isCanceled)
                 .map(OrderItem::getOrderCancelItem)
@@ -179,6 +203,7 @@ public class OrderService {
     }
     
     private OrderItem completeCancelOne(Long orderItemId) {
+        log.info("complete order item canceled (orderItemId={})", orderItemId);
         OrderItem orderItem = fetchOrderItem(orderItemId);
         if (!orderItem.isCanceled()) {
             throw new InvalidAccessException("취소 내역을 찾을 수 없습니다");

@@ -56,6 +56,7 @@ public class Order extends BaseTimeEntity {
         }
     }
 
+    // PRE_ORDER -> PRE_PAYMENT
     public void fillDeliveryInfo(String recipient, String address, String zipCode) {
         orderItems.forEach(OrderItem::prePayment);
         this.recipient = recipient;
