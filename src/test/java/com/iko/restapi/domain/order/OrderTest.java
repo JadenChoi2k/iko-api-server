@@ -62,7 +62,7 @@ public class OrderTest {
         Order order = createOrder();
         // when
         Integer expected = order.getOrderItems().get(0).getTotalPrice();
-        Integer actual = order.wholePrice();
+        Integer actual = order.wholeProductPrice();
         // then
         assertThat(actual).isEqualTo(expected);
     }

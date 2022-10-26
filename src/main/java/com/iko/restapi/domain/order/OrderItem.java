@@ -35,6 +35,7 @@ public class OrderItem extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer count;
 
+    // 최종 가격
     @Column(nullable = false)
     private Integer totalPrice;
 
@@ -56,7 +57,7 @@ public class OrderItem extends BaseTimeEntity {
     @Getter
     @RequiredArgsConstructor
     public enum State {
-        PRE_ORDER("주문 전"), PAYED("결제 완료"), READY_PRODUCT("상품 준비 중"),
+        PRE_ORDER("주문 전"), PRE_PAYMENT("결제 전"), PAYED("결제 완료"), READY_PRODUCT("상품 준비 중"),
         READY_DELIVERY("배송 준비 중"), IN_DELIVERY("배송 중"), CANCEL("취소"),
         DELIVERY_DONE("배송 완료"), COMPLETE("주문 확정"), ERROR("오류 발생");
         private final String description;
@@ -94,10 +95,18 @@ public class OrderItem extends BaseTimeEntity {
         }
         this.state = State.READY_DELIVERY;
     }
-    
+
+    // 배송 정보 입력 후에만 접근
+    public void prePayment() {
+        if (this.state != State.PRE_ORDER) {
+            throw new InvalidAccessException("주문 정보가 이미 입력되었습니다");
+        }
+        this.state = State.PRE_PAYMENT;
+    }
+
     // 결제 완료 후에만 접근
     public void pay() {
-        if (this.state != State.PRE_ORDER) {
+        if (this.state != State.PRE_PAYMENT) {
             throw new InvalidAccessException("결제 전이 아닙니다");
         }
         this.state = State.PAYED;
