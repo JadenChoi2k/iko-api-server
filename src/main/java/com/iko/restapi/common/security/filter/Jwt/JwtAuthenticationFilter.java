@@ -38,10 +38,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
     	try {
-            // Basic 인증 추가(헤더 Authorization 을 Base64디코드. 샘플 형식은 상단 main 참조
         	String decoded=null;
 			try {
-				decoded = new String(Base64.getDecoder().decode(request.getHeader("Authorization")));
+				String idpw = request.getHeader("Authorization").substring(6);
+				decoded = new String(Base64.getDecoder().decode(idpw));
 			} catch (IllegalArgumentException e) {
 				log.info("ERROR: " + e);
 				throw new AuthenticationCredentialsNotFoundException(decoded);
@@ -49,13 +49,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				log.info("ERROR: " + ne);
 				throw new AuthenticationCredentialsNotFoundException(decoded);
 			}
-			ObjectMapper om = new ObjectMapper();
-        	LoginRequest loginRequest = om.readValue(decoded, LoginRequest.class);
-            log.info("try to log in : {}", loginRequest.getLoginId());
+			int idx = decoded.indexOf(":");
+			String id = decoded.substring(0, idx);
+			String pw = decoded.substring(idx+1);
+            log.info("try to log in : {}", id);
             Authentication authenticationToken =
-                    new UsernamePasswordAuthenticationToken(loginRequest.getLoginId(), loginRequest.getPassword());
+                    new UsernamePasswordAuthenticationToken(id, pw);
             return authenticationManager.authenticate(authenticationToken);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("exception while trying to log in: {}", e.getMessage());
             try {
                 response.sendError(HttpStatus.BAD_REQUEST.value(), "invalid json type");
