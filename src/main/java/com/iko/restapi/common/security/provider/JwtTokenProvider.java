@@ -83,7 +83,8 @@ public class JwtTokenProvider {
  // JWT 토큰 가져오기
  public String getJwt(){
      HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
-     return request.getHeader("Authorization");
+     String token = request.getHeader("Authorization").substring(7);
+     return token;
  }
  // JWT 토큰으로 유저 PK 가져오기
  public String getUserNum() throws BaseException{
