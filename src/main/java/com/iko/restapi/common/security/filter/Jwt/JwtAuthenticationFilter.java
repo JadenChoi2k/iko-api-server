@@ -37,26 +37,44 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-    	try {
-        	String decoded=null;
-			try {
-				String idpw = request.getHeader("Authorization").substring(6);
-				decoded = new String(Base64.getDecoder().decode(idpw));
-			} catch (IllegalArgumentException e) {
-				log.info("ERROR: " + e);
-				throw new AuthenticationCredentialsNotFoundException(decoded);
-			} catch (NullPointerException ne) {
-				log.info("ERROR: " + ne);
-				throw new AuthenticationCredentialsNotFoundException(decoded);
-			}
-			int idx = decoded.indexOf(":");
-			String id = decoded.substring(0, idx);
-			String pw = decoded.substring(idx+1);
-            log.info("try to log in : {}", id);
+//    	HttpBasic auth 방식
+    	//    	try {
+//        	String decoded=null;
+//			try {
+//				String idpw = request.getHeader("Authorization").substring(6);
+//				String tes = request.getHeader("Authorization");
+//				decoded = new String(Base64.getDecoder().decode(idpw));
+//			} catch (IllegalArgumentException e) {
+//				log.info("ERROR: " + e);
+//				throw new AuthenticationCredentialsNotFoundException(decoded);
+//			} catch (NullPointerException ne) {
+//				log.info("ERROR: " + ne);
+//				throw new AuthenticationCredentialsNotFoundException(decoded);
+//			}
+//			int idx = decoded.indexOf(":");
+//			String id = decoded.substring(0, idx);
+//			String pw = decoded.substring(idx+1);
+//            log.info("try to log in : {}", id);
+//            Authentication authenticationToken =
+//                    new UsernamePasswordAuthenticationToken(id, pw);
+//            return authenticationManager.authenticate(authenticationToken);
+//        } catch (Exception e) {
+//            log.error("exception while trying to log in: {}", e.getMessage());
+//            try {
+//                response.sendError(HttpStatus.BAD_REQUEST.value(), "invalid json type");
+//                return null;
+//            } catch (IOException ex) {
+//                throw new RuntimeException(ex);
+//            }
+//        }
+    	ObjectMapper om = new ObjectMapper();
+        try {
+            LoginRequest loginRequest = om.readValue(request.getInputStream(), LoginRequest.class);
+            log.info("try to log in : {}", loginRequest.getLoginId());
             Authentication authenticationToken =
-                    new UsernamePasswordAuthenticationToken(id, pw);
+                    new UsernamePasswordAuthenticationToken(loginRequest.getLoginId(), loginRequest.getPassword());
             return authenticationManager.authenticate(authenticationToken);
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("exception while trying to log in: {}", e.getMessage());
             try {
                 response.sendError(HttpStatus.BAD_REQUEST.value(), "invalid json type");
