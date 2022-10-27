@@ -20,23 +20,28 @@ import com.iko.restapi.common.exception.BaseException;
 import com.iko.restapi.common.exception.ErrorCode;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 //토큰을 생성하고 검증하는 클래스입니다.
 //해당 컴포넌트는 필터클래스에서 사전 검증을 거칩니다.
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class JwtTokenProvider {
  private String authKey = "ikoSecretAuthKey";
  private String refreshKey = "ikoSecretRefreshKey";
 
  // 토큰 유효시간 
  private long authValidTime = 30 * 60 * 1000L; //30분
- private long refreshValidDay = 14 * 24 * 60 * 60 * 1000L; // 14일
+	private long refreshValidDay = 14 * 24 * 60 * 60 * 1000L; // 14일
 
  private final UserDetailsService userDetailsService;
 
@@ -106,30 +111,21 @@ public class JwtTokenProvider {
  }
 
  // JWT 토큰에서 인증 정보 조회
- public Authentication getAuthentication(String token) {
-     UserDetails userDetails = userDetailsService.loadUserByUsername(this.getUserPk(token));
+ public Authentication getAuthentication(String token, String keyType) {
+     UserDetails userDetails = userDetailsService.loadUserByUsername(this.getClaim(token, keyType).getSubject());
      return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
  }
 
- // 토큰에서 회원 정보 추출
- public String getUserPk(String token) {
-     return Jwts.parser().setSigningKey(authKey).parseClaimsJws(token).getBody().getSubject();
- }
- 
  // accessToken or refreshToken Claims 가져오기
- public Claims getClaim(String token) {
+ public Claims getClaim(String token, String keyType) {
+	 String key ;
+	 key = (keyType.equals("refreshKey"))? refreshKey:authKey;
 	 try {
-		 return Jwts.parser().setSigningKey(authKey).parseClaimsJws(token).getBody();
-	 } catch (SignatureException signatureException) {
-		 try {
-			 return Jwts.parser().setSigningKey(refreshKey).parseClaimsJws(token).getBody();
-		 } catch (Exception exception) {
-			 throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
-		 }
-	 } catch (Exception e) {
-		 throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
-		 
-	 }
+		return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+	} catch (Exception e) {
+		log.info("Exception"+e);
+		throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN, e);
+	}
  }
 
  // 토큰의 유효성 + 만료일자 확인

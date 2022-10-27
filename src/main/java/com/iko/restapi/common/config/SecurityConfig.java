@@ -80,6 +80,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .authenticated()
                     .antMatchers("/api/v1/user/me/**")
                         .authenticated()
+                    .antMatchers("/refreshToken")
+                    	.permitAll()
                     .anyRequest().permitAll();
     }
 }
