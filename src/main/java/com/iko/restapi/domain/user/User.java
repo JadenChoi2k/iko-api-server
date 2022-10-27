@@ -1,8 +1,21 @@
 package com.iko.restapi.domain.user;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.iko.restapi.common.entity.BaseTimeEntity;
 import com.iko.restapi.common.exception.InvalidParameterException;
@@ -18,113 +31,144 @@ import lombok.RequiredArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "usr")
-public class User extends BaseTimeEntity {
+public class User extends BaseTimeEntity /*implements UserDetails*/  {
 
-    @Id
-    @GeneratedValue
-    @Column(name = "user_id")
-    private Long id;
+	@Id
+	@GeneratedValue
+	@Column(name = "user_id")
+	private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 15, nullable = false)
-    private Role role = Role.ROLE_MEMBER;
+	@Enumerated(EnumType.STRING)
+	@Column(length = 15, nullable = false)
+	private Role role = Role.ROLE_MEMBER;
 
-    @Column(name = "login_id", unique = true, length = 30, nullable = false)
-    private String loginId;
+	@Column(name = "login_id", unique = true, length = 30, nullable = false)
+	private String loginId;
 
-    @Column(name = "username", length = 20, nullable = false)
-    private String username;
+	@Column(name = "username", length = 20, nullable = false)
+	private String username;
 
-    @Column(name = "gender", length = 1)
-    @Enumerated(EnumType.STRING)
-    private Gender gender = Gender.X;
+	@Column(name = "gender", length = 1)
+	@Enumerated(EnumType.STRING)
+	private Gender gender = Gender.X;
 
-    @Column(name = "email", nullable = false)
-    private String email;
+	@Column(name = "email", nullable = false)
+	private String email;
 
-    @Column(name = "phone")
-    private String phone;
+	@Column(name = "phone")
+	private String phone;
 
-    @Column(name = "pswd", nullable = false)
-    private String password;
+	@Column(name = "pswd", nullable = false)
+	private String password;
 
-    @Column(name = "birthday")
-    private LocalDate birthday;
+	@Column(name = "birthday")
+	private LocalDate birthday;
 
-    // 계정의 사용여부
-    @Column(name = "use_yn")
-    private Boolean useYn = true;
+	// 계정의 사용여부
+	@Column(name = "use_yn")
+	private Boolean useYn = true;
 
-    @Column(name = "pw_updt_dt")
-    private LocalDate passwordUpdatedAt;
+	@Column(name = "pw_updt_dt")
+	private LocalDate passwordUpdatedAt;
 
-    @Getter
-    @RequiredArgsConstructor
-    public enum Role {
-        ROLE_MEMBER("멤버"), ROLE_SELLER("판매자"), ROLE_ADMIN("관리자");
+	@Getter
+	@RequiredArgsConstructor
+	public enum Role {
+		ROLE_MEMBER("멤버"), ROLE_SELLER("판매자"), ROLE_ADMIN("관리자");
 
-        private final String description;
-    }
-    
-    @Getter
-    @RequiredArgsConstructor
-    public enum Gender {
-        M("남성"), F("여성"), X("없음");
-        
-        private final String description;
+		private final String description;
+	}
 
-        static Gender from(String s) {
-            if (s == null) return X;
-            switch (s) {
-                case "M":
-                    return M;
-                case "F":
-                    return F;
-                default:
-                    return X;
-            }
-        }
-    }
+	@Getter
+	@RequiredArgsConstructor
+	public enum Gender {
+		M("남성"), F("여성"), X("없음");
 
-    public static User of(JoinRequest joinRequest) throws RuntimeException {
-        User joinUser = new User();
+		private final String description;
 
-        joinUser.loginId = joinRequest.getLoginId();
-        joinUser.username = joinRequest.getUsername();
-        joinUser.gender = Gender.from(joinRequest.getGender());
-        joinUser.email = joinRequest.getEmail();
-        joinUser.phone = joinRequest.getPhone();
-        joinUser.password = joinRequest.getPassword();
-        joinUser.birthday = DataUtils.parseBirthday(joinRequest.getBirthday());
-        joinUser.passwordUpdatedAt = LocalDate.now();
-        joinUser.useYn = true;
+		static Gender from(String s) {
+			if (s == null)
+				return X;
+			switch (s) {
+			case "M":
+				return M;
+			case "F":
+				return F;
+			default:
+				return X;
+			}
+		}
+	}
 
-        return joinUser;
-    }
+	public static User of(JoinRequest joinRequest) throws RuntimeException {
+		User joinUser = new User();
 
-    public void updateProfile(String username, String phone, String email) {
-        if (username != null) {
-            this.username = username;
-        }
-        if (phone != null) {
-            this.phone = phone;
-        }
-        if (email != null) {
-            this.email = email;
-        }
-    }
+		joinUser.loginId = joinRequest.getLoginId();
+		joinUser.username = joinRequest.getUsername();
+		joinUser.gender = Gender.from(joinRequest.getGender());
+		joinUser.email = joinRequest.getEmail();
+		joinUser.phone = joinRequest.getPhone();
+		joinUser.password = joinRequest.getPassword();
+		joinUser.birthday = DataUtils.parseBirthday(joinRequest.getBirthday());
+		joinUser.passwordUpdatedAt = LocalDate.now();
+		joinUser.useYn = true;
 
-    /**
-     * 인코딩된 패스워드만 입력되도록 한다
-     * @param password
-     */
-    public void updatePassword(String password) {
-        if (password != null) {
-            this.password = password;
-            this.passwordUpdatedAt = LocalDate.now();
-        } else {
-            throw new InvalidParameterException("비밀번호없음");
-        }
-    }
+		return joinUser;
+	}
+
+	public void updateProfile(String username, String phone, String email) {
+		if (username != null) {
+			this.username = username;
+		}
+		if (phone != null) {
+			this.phone = phone;
+		}
+		if (email != null) {
+			this.email = email;
+		}
+	}
+
+	/**
+	 * 인코딩된 패스워드만 입력되도록 한다
+	 * 
+	 * @param password
+	 */
+	public void updatePassword(String password) {
+		if (password != null) {
+			this.password = password;
+			this.passwordUpdatedAt = LocalDate.now();
+		} else {
+			throw new InvalidParameterException("비밀번호없음");
+		}
+	}
+
+//	
+//	  @Override 
+//	  public Collection<? extends GrantedAuthority> getAuthorities() { //
+//		  List<SimpleGrantedAuthority> authorList = new ArrayList<SimpleGrantedAuthority>(); 
+//		  SimpleGrantedAuthority sga = new SimpleGrantedAuthority(this.getRole().toString()); 
+//		  authorList.add(sga);
+//		  return authorList;
+//	  }
+//	  
+//	  @Override 
+//	  public boolean isAccountNonExpired() { // TODO Auto-generated
+//		  return true; 
+//	  }
+//	  
+//	  @Override 
+//	  public boolean isAccountNonLocked() {
+//		  if(this.useYn) { 
+//			  return true; 
+//		  } return false;
+//	  }
+//	  
+//	  
+//	  @Override public boolean isCredentialsNonExpired() { // TODO Auto-generated
+//	  return true; }
+//	  
+//	  @Override public boolean isEnabled() { // TODO Auto-generated method stub
+//	  return true; }
+//	 
 
 }

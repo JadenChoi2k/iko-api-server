@@ -1,34 +1,35 @@
 package com.iko.restapi.common.config;
 
-import com.iko.restapi.common.security.filter.LogoutSuccessHandlerImpl;
-import com.iko.restapi.common.security.auth.session.SessionAuthenticationFilter;
-import com.iko.restapi.common.security.auth.session.SessionAuthorizationFilter;
-import com.iko.restapi.repository.user.UserJpaRepository;
-import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
-import org.apache.tomcat.util.http.SameSiteCookies;
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import com.iko.restapi.common.security.logout.JwtLogoutHandler;
+import com.iko.restapi.common.security.logout.LogoutTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.iko.restapi.common.security.filter.LogoutSuccessHandlerImpl;
+import com.iko.restapi.common.security.filter.Jwt.JwtAuthenticationFilter;
+import com.iko.restapi.common.security.filter.Jwt.JwtAuthorizationFilter;
+import com.iko.restapi.common.security.provider.JwtTokenProvider;
+import com.iko.restapi.repository.user.UserJpaRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserJpaRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final LogoutTokenService logoutTokenService;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -59,12 +60,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
+                // .logout() 구현하기
                 .logout()
+                    .addLogoutHandler(new JwtLogoutHandler(logoutTokenService, jwtTokenProvider))
                     .logoutUrl("/logout")
                     .logoutSuccessHandler(new LogoutSuccessHandlerImpl())
                 .and()
-                .addFilter(new SessionAuthenticationFilter(authenticationManager(), passwordEncoder()))
-                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userRepository))
+//                .addFilter(new SessionAuthenticationFilter(authenticationManager(), passwordEncoder()))
+//                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userRepository))
+                .addFilterBefore(new JwtAuthenticationFilter(authenticationManager(), jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthorizationFilter(authenticationManager(), userRepository, jwtTokenProvider, logoutTokenService),
+                        BasicAuthenticationFilter.class)
                 .authorizeRequests()
                     .antMatchers("/api/v1/user/**")
                         .permitAll()
@@ -76,6 +82,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .hasAnyRole("ROLE_SELLER", "ROLE_ADMIN")
                     .antMatchers("/api/v1/user/me/**")
                         .authenticated()
+                    .antMatchers("/auth/refresh")
+                    	.permitAll()
                     .anyRequest().permitAll();
     }
 
