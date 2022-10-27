@@ -41,7 +41,7 @@ public class OrderItem extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_state", nullable = false)
-    private State state = State.PRE_ORDER;
+    private State state = State.PRE_PAYMENT;
 
     // state = CANCEL일 때만 fetch
     @OneToOne(mappedBy = "orderItem", fetch = FetchType.LAZY)
@@ -57,7 +57,7 @@ public class OrderItem extends BaseTimeEntity {
     @Getter
     @RequiredArgsConstructor
     public enum State {
-        PRE_ORDER("주문 전"), PRE_PAYMENT("결제 전"), PAYED("결제 완료"), READY_PRODUCT("상품 준비 중"),
+        PRE_PAYMENT("결제 전"), PAYED("결제 완료"), READY_PRODUCT("상품 준비 중"),
         READY_DELIVERY("배송 준비 중"), IN_DELIVERY("배송 중"), CANCEL("취소"),
         DELIVERY_DONE("배송 완료"), COMPLETE("주문 확정"), ERROR("오류 발생");
         private final String description;
@@ -73,7 +73,7 @@ public class OrderItem extends BaseTimeEntity {
                 .map((opt) -> new OrderItemOptionItem(orderItem, opt))
                 .collect(Collectors.toList());
         orderItem.totalPrice = product.wholePrice(selectedOptions);
-        orderItem.state = State.PRE_ORDER;
+        orderItem.state = State.PRE_PAYMENT;
 
         return orderItem;
     }
@@ -97,12 +97,12 @@ public class OrderItem extends BaseTimeEntity {
     }
 
     // 배송 정보 입력 후에만 접근
-    public void prePayment() {
-        if (this.state != State.PRE_ORDER) {
-            throw new InvalidAccessException("주문 정보가 이미 입력되었습니다");
-        }
-        this.state = State.PRE_PAYMENT;
-    }
+//    public void prePayment() {
+//        if (this.state != State.PRE_ORDER) {
+//            throw new InvalidAccessException("주문 정보가 이미 입력되었습니다");
+//        }
+//        this.state = State.PRE_PAYMENT;
+//    }
 
     // 결제 완료 후에만 접근
     public void pay() {
@@ -136,7 +136,7 @@ public class OrderItem extends BaseTimeEntity {
     }
 
     public OrderCancelItem cancelPreOrder() {
-        if (this.state != State.PRE_ORDER) {
+        if (this.state != State.PRE_PAYMENT) {
             throw new InvalidAccessException("결제 전 상태에서면 주문 취소를 할 수 있습니다");
         }
         this.state = State.CANCEL;
