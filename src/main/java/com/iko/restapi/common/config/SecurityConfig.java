@@ -1,5 +1,7 @@
 package com.iko.restapi.common.config;
 
+import com.iko.restapi.common.security.logout.JwtLogoutHandler;
+import com.iko.restapi.common.security.logout.LogoutTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserJpaRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LogoutTokenService logoutTokenService;
     
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -66,13 +69,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // .logout() 구현하기
                 .and()
                 .logout()
+                    .addLogoutHandler(new JwtLogoutHandler(logoutTokenService, jwtTokenProvider))
                     .logoutUrl("/logout")
                     .logoutSuccessHandler(new LogoutSuccessHandlerImpl())
                 .and()
 //                .addFilter(new SessionAuthenticationFilter(authenticationManager(), passwordEncoder()))
 //                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userRepository))
                 .addFilterBefore(new JwtAuthenticationFilter(authenticationManager(), jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new JwtAuthorizationFilter(authenticationManager(), userRepository, jwtTokenProvider), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthorizationFilter(authenticationManager(), userRepository, jwtTokenProvider, logoutTokenService),
+                        BasicAuthenticationFilter.class)
                 .authorizeRequests()
                 	.antMatchers("/api/v1/login")
                 		.permitAll()

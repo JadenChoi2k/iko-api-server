@@ -5,6 +5,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.iko.restapi.common.security.logout.LogoutTokenService;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -17,14 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
-	private final AuthenticationManager authenticationManager;	
+	private final AuthenticationManager authenticationManager;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserJpaRepository userRepository;
-	public JwtAuthorizationFilter(AuthenticationManager authenticationManager, UserJpaRepository userRepository, JwtTokenProvider jwtTokenProvider) {
+	private final LogoutTokenService logoutTokenService;
+	public JwtAuthorizationFilter(AuthenticationManager authenticationManager, UserJpaRepository userRepository,
+								  JwtTokenProvider jwtTokenProvider, LogoutTokenService logoutTokenService) {
         super(authenticationManager);
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtTokenProvider = jwtTokenProvider;
+		this.logoutTokenService = logoutTokenService;
     }
 
 	@Override
@@ -40,11 +45,16 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 			doFilter(request, response, chain);
 			return;
 		}
-		
+		// 로그아웃 상태인 경우: 401
+		if (logoutTokenService.getLogoutData(token) != null) {
+			log.info("token requested when logged out");
+			doFilter(request, response, chain);
+			return;
+		}
 		// 토큰이 올바르지 않음 or 유효기간 만료: 401
 		Claims claim;
 		try {
-			claim = jwtTokenProvider.getClaim(token, "authKey");
+			claim = jwtTokenProvider.getClaim(token);
 		} catch (Exception e) {
 			doFilter(request, response, chain);
 			return;
@@ -68,7 +78,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 		}
 		
 		// 올바른 accessToken을 받은 경우
-		Authentication authentication = jwtTokenProvider.getAuthentication(token, "authKey");
+		Authentication authentication = jwtTokenProvider.getAuthentication(token);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	    doFilter(request, response, chain);
 	}
