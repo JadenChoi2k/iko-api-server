@@ -36,105 +36,102 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class JwtTokenProvider {
- private String authKey = "ikoSecretAuthKey";
- private String refreshKey = "ikoSecretRefreshKey";
+    private String authKey = "ikoSecretAuthKey";
 
- // 토큰 유효시간 
- private long authValidTime = 30 * 60 * 1000L; //30분
-	private long refreshValidDay = 14 * 24 * 60 * 60 * 1000L; // 14일
+    // 토큰 유효시간
+    private long authValidTime = 30 * 60 * 1000L; //30분
+    private long refreshValidDay = 14 * 24 * 60 * 60 * 1000L; // 14일
 
- private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
- // 객체 초기화, secretKey를 Base64로 인코딩한다.
- @PostConstruct
- protected void init() {
-	 authKey = Base64.getEncoder().encodeToString(authKey.getBytes());
-	 refreshKey = Base64.getEncoder().encodeToString(refreshKey.getBytes());
- }
+    // 객체 초기화, secretKey를 Base64로 인코딩한다.
+    @PostConstruct
+    protected void init() {
+        authKey = Base64.getEncoder().encodeToString(authKey.getBytes());
+    }
 
- // JWT 토큰 생성 
- public String createAccToken(String userPk, Collection<? extends GrantedAuthority> roles) {
-     Claims claims = Jwts.claims().setSubject(userPk); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
-     claims.put("roles", roles.stream().findFirst()); // 정보는 key / value 쌍으로 저장된다.
-     claims.put("type", "accessToken");
-     Date now = new Date();
-     return Jwts.builder()
-             .setClaims(claims) // 정보 저장
-             .setIssuedAt(now) // 토큰 발행 시간 정보
-             .setExpiration(new Date(now.getTime() + authValidTime)) // set Expire Time
-             .signWith(SignatureAlgorithm.HS256, authKey)  // 사용할 암호화 알고리즘과
-             // signature 에 들어갈 secret값 세팅
-             .compact();
- }
- 
- public String createRefreshToken(String userPk, Collection<? extends GrantedAuthority> roles) {
-     Claims claims = Jwts.claims().setSubject(userPk); 
-     claims.put("roles", roles.stream().findFirst());
-     claims.put("type", "refreshToken");
-     Date now = new Date();
-     return Jwts.builder()
-             .setClaims(claims) 
-             .setIssuedAt(now) 
-             .setExpiration(new Date(now.getTime() + refreshValidDay))
-             .signWith(SignatureAlgorithm.HS256, refreshKey) 
-             .compact();
- }
- 
- // JWT 토큰 가져오기
- public String getJwt(){
-     HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
-     String token = request.getHeader("Authorization").substring(7);
-     return token;
- }
- // JWT 토큰으로 유저 PK 가져오기
- public String getUserNum() throws BaseException{
-     //1. JWT 추출
-     String accessToken = getJwt();
-     if(accessToken == null || accessToken.length() == 0){
-         throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
-     }
-     
-     // 2. token 만료일자 확인
-     
+    // JWT 토큰 생성
+    public String createAccToken(String userPk, Collection<? extends GrantedAuthority> roles) {
+        Claims claims = Jwts.claims().setSubject(userPk); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
+        claims.put("roles", roles.stream().findFirst()); // 정보는 key / value 쌍으로 저장된다.
+        claims.put("type", "accessToken");
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(claims) // 정보 저장
+                .setIssuedAt(now) // 토큰 발행 시간 정보
+                .setExpiration(new Date(now.getTime() + authValidTime)) // set Expire Time
+                .signWith(SignatureAlgorithm.HS256, authKey)  // 사용할 암호화 알고리즘과
+                // signature 에 들어갈 secret값 세팅
+                .compact();
+    }
 
-     // 2. JWT parsing
-     Jws<Claims> claims;
-     try{
-         claims = Jwts.parser()
-                 .setSigningKey(authKey)
-                 .parseClaimsJws(accessToken);
-     } catch (Exception ignored) {
-         throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
-     }
+    public String createRefreshToken(String userPk, Collection<? extends GrantedAuthority> roles) {
+        Claims claims = Jwts.claims().setSubject(userPk);
+        claims.put("roles", roles.stream().findFirst());
+        claims.put("type", "refreshToken");
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshValidDay))
+                .signWith(SignatureAlgorithm.HS256, authKey)
+                .compact();
+    }
 
-     // 3. userNum 추출
-     return claims.getBody().getSubject();
- }
+    // JWT 토큰 가져오기
+    public String getJwt() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String authHeader = request.getHeader("Authorization");
+        return authHeader == null ? null : authHeader.substring(7);
+    }
 
- // JWT 토큰에서 인증 정보 조회
- public Authentication getAuthentication(String token, String keyType) {
-     UserDetails userDetails = userDetailsService.loadUserByUsername(this.getClaim(token, keyType).getSubject());
-     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
- }
+    // JWT 토큰으로 유저 PK 가져오기
+    public String getUserNum() throws BaseException {
+        //1. JWT 추출
+        String accessToken = getJwt();
+        if (accessToken == null || accessToken.length() == 0) {
+            throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
+        }
 
- // accessToken or refreshToken Claims 가져오기
- public Claims getClaim(String token, String keyType) {
-	 String key ;
-	 key = (keyType.equals("refreshKey"))? refreshKey:authKey;
-	 try {
-		return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
-	} catch (Exception e) {
-		log.info("Exception"+e);
-		throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN, e);
-	}
- }
+        // 2. token 만료일자 확인
 
- // 토큰의 유효성 + 만료일자 확인
- public boolean validateToken(Claims claim) {
-     try {
-         return !claim.getExpiration().before(new Date());
-     } catch (Exception e) {
-         return false;
-     }
- }
+
+        // 2. JWT parsing
+        Jws<Claims> claims;
+        try {
+            claims = Jwts.parser()
+                    .setSigningKey(authKey)
+                    .parseClaimsJws(accessToken);
+        } catch (Exception ignored) {
+            throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN);
+        }
+
+        // 3. userNum 추출
+        return claims.getBody().getSubject();
+    }
+
+    // JWT 토큰에서 인증 정보 조회
+    public Authentication getAuthentication(String token) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getClaim(token).getSubject());
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
+
+    // accessToken or refreshToken Claims 가져오기
+    public Claims getClaim(String token) {
+        try {
+            return Jwts.parser().setSigningKey(authKey).parseClaimsJws(token).getBody();
+        } catch (Exception e) {
+            log.info("Exception" + e);
+            throw new BaseException(ErrorCode.COMMON_INVALID_TOKEN, e);
+        }
+    }
+
+    // 토큰의 유효성 + 만료일자 확인
+    public boolean validateToken(Claims claim) {
+        try {
+            return !claim.getExpiration().before(new Date());
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

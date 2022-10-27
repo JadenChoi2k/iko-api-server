@@ -29,7 +29,7 @@ public class TokenController {
 		// TODO: 
 		try {
 			String token = refreshToken.get("refreshToken");
-			Authentication	authentication = jwtTokenProvider.getAuthentication(token, "refreshKey");
+			Authentication	authentication = jwtTokenProvider.getAuthentication(token);
 			var principalDetails = (PrincipalDetails) authentication.getPrincipal();
 			String renewedAccessToken = jwtTokenProvider.createAccToken(principalDetails.getUsername(), principalDetails.getAuthorities());
 			log.info("refreshToken Request from: "+ principalDetails.getUsername());
