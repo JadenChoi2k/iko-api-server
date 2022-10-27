@@ -30,7 +30,7 @@ public class TokenController {
 		// 토큰담는 형식 주의: RequestHeader.Authorization: Bearer $token
 		try {
 			String token = refreshToken.substring(7);
-			Authentication	authentication = jwtTokenProvider.getAuthentication(token, "refreshKey");
+			Authentication	authentication = jwtTokenProvider.getAuthentication(token);
 			var principalDetails = (PrincipalDetails) authentication.getPrincipal();
 			String renewedAccessToken = jwtTokenProvider.createAccToken(principalDetails.getUsername(), principalDetails.getAuthorities());
 			log.info("refreshToken Request from: "+ principalDetails.getUsername());
