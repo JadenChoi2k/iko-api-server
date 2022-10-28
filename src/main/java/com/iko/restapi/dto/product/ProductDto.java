@@ -100,12 +100,12 @@ public class ProductDto {
 //        private String name;
 //        private String nameKor;
 //        private String title;
-        private String manufacturer;
+        private final String manufacturer;
 //        private String brand;
-        private List<OptionGroup> options;
-        private Spec spec;
+        private final List<OptionGroup> options;
+        private final Spec spec;
         @ApiModelProperty("상세 내용")
-        private String description;
+        private final String description;
 //        private Integer consumerPrice;
 //        private Integer sellPrice;
 //        private Boolean selling;
@@ -113,17 +113,17 @@ public class ProductDto {
 //        private Integer defaultDeliveryFee;
 //        private Integer freeDeliveryFee;
         @ApiModelProperty("seo 타이틀")
-        private String seoTitle;
+        private final String seoTitle;
         @ApiModelProperty("seo 설명")
-        private String seoDescription;
+        private final String seoDescription;
         @ApiModelProperty("seo 키워드")
-        private String seoKeyword;
+        private final String seoKeyword;
         @ApiModelProperty("seo 스탠다드")
-        private String seoStandard;
+        private final String seoStandard;
         @ApiModelProperty("일반 배송 가이드")
-        private String generalDeliveryGuide;
+        private final String generalDeliveryGuide;
         @ApiModelProperty("빠른 배송 가이드")
-        private String speedDeliveryGuide;
+        private final String speedDeliveryGuide;
 //        private String colorName;
 //        private String colorCode;
 //        private String image1;

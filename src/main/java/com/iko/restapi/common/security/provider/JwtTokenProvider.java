@@ -39,8 +39,8 @@ public class JwtTokenProvider {
     private String authKey = "ikoSecretAuthKey";
 
     // 토큰 유효시간
-    private long authValidTime = 30 * 60 * 1000L; //30분
-    private long refreshValidDay = 14 * 24 * 60 * 60 * 1000L; // 14일
+    private final long authValidTime = 30 * 60 * 1000L; //30분
+    private final long refreshValidDay = 14 * 24 * 60 * 60 * 1000L; // 14일
 
     private final UserDetailsService userDetailsService;
 

@@ -4,6 +4,7 @@ import com.iko.restapi.common.security.logout.JwtLogoutHandler;
 import com.iko.restapi.common.security.logout.LogoutTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -22,6 +23,9 @@ import com.iko.restapi.common.security.provider.JwtTokenProvider;
 import com.iko.restapi.repository.user.UserJpaRepository;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
