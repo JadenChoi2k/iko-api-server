@@ -6,7 +6,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Slf4j
 @Service
@@ -18,10 +18,10 @@ public class LogoutTokenService {
     }
 
     @CachePut(cacheNames = "logoutCache", key = "#token")
-    public LogoutToken updateLogoutData(String token, LocalDateTime expirationDateTime) {
+    public LogoutToken updateLogoutData(String token, Date expireAt) {
         var logoutToken = new LogoutToken();
         logoutToken.setToken(token);
-        logoutToken.setExpirationDateTime(expirationDateTime);
+        logoutToken.setExpireAt(expireAt);
         return logoutToken;
     }
 

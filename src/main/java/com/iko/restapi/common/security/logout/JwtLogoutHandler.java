@@ -27,10 +27,7 @@ public class JwtLogoutHandler implements LogoutHandler {
             token = token.substring(7);
             try {
                 Claims claim = jwtTokenProvider.getClaim(token);
-                LocalDateTime expirationDateTime = claim.getExpiration().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                logoutTokenService.updateLogoutData(token, expirationDateTime);
+                logoutTokenService.updateLogoutData(token, claim.getExpiration());
             } catch (BaseException e) {
                 try {
                     response.sendError(400, "invalid token");
