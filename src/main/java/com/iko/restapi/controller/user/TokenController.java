@@ -1,5 +1,6 @@
 package com.iko.restapi.controller.user;
 
+import com.iko.restapi.common.exception.InvalidParameterException;
 import com.iko.restapi.common.response.CommonResponse;
 import com.iko.restapi.common.security.provider.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,9 @@ public class TokenController {
 
 	@PostMapping("/refresh")
 	public CommonResponse<Map<String, String>> refreshToken(@RequestHeader(value="Authorization") String refreshToken){
-		// 토큰담는 형식 주의: RequestHeader.Authorization: Bearer $token
+		if (refreshToken == null || refreshToken.length() < 7) {
+			throw new InvalidParameterException("Authorization 헤더를 입력해주세요");
+		}
 		String token = refreshToken.substring(7);
 		return CommonResponse.success(jwtTokenProvider.reissueToken(token));
 	}
